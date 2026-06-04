@@ -11,3 +11,6 @@ devserver.*.log
 Gemini_Generated_Image_*.png
 Cyber-cube_logo_*.mp4
 VidiX_tech_commercial_*.mp4
+serviceAccount*.json
+*-service-account.json
+google-application-credentials.json
