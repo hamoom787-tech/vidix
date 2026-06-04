@@ -1,0 +1,13 @@
+node_modules/
+functions/node_modules/
+dist/
+.env
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+devserver.*.log
+*.local
+Gemini_Generated_Image_*.png
+Cyber-cube_logo_*.mp4
+VidiX_tech_commercial_*.mp4

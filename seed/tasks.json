@@ -1,0 +1,46 @@
+{
+  "tasks/task-taylor-swift": {
+    "title": "Taylor Swift Premiere",
+    "category": "Music Documentary",
+    "vipRequired": "M1",
+    "reward": 1,
+    "durationSeconds": 12,
+    "status": "active",
+    "sortOrder": 10,
+    "posterUrl": "/assets/images/tasks/watch-earn-phone.png",
+    "videoUrl": "https://www.youtube.com/embed/ysz5S6PUM-U"
+  },
+  "tasks/task-wimpy-kid": {
+    "title": "Diary of a Wimpy Kid",
+    "category": "Family Trailer",
+    "vipRequired": "M1",
+    "reward": 1,
+    "durationSeconds": 12,
+    "status": "active",
+    "sortOrder": 20,
+    "posterUrl": "/assets/images/tasks/movie-task-vault.png",
+    "videoUrl": "https://www.youtube.com/embed/jNQXAC9IVRw"
+  },
+  "tasks/task-murder-easttown": {
+    "title": "Murder in Easttown",
+    "category": "Drama Preview",
+    "vipRequired": "M2",
+    "reward": 1,
+    "durationSeconds": 12,
+    "status": "active",
+    "sortOrder": 30,
+    "posterUrl": "/assets/images/banners/vidix-cinema-vip.png",
+    "videoUrl": "https://www.youtube.com/embed/tgbNymZ7vqY"
+  },
+  "tasks/task-gupta-journey": {
+    "title": "Gupta's Journey",
+    "category": "Cinema Trailer",
+    "vipRequired": "M3",
+    "reward": 1,
+    "durationSeconds": 12,
+    "status": "active",
+    "sortOrder": 40,
+    "posterUrl": "/assets/images/brand/vidix-hex-logo-scene.png",
+    "videoUrl": "https://www.youtube.com/embed/ysz5S6PUM-U"
+  }
+}

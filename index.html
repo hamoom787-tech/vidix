@@ -1,0 +1,908 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0d0f12" />
+    <title>VidiX | Premium Video Task Earning Platform</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              obsidian: "#0d0f12",
+              slateCard: "#161b22",
+              slateLine: "#30363d",
+              emeraldNeon: "#00e676",
+              vipGold: "#ffd700",
+              mutedSilver: "#8b949e",
+              frost: "rgba(255,255,255,0.06)"
+            },
+            fontFamily: {
+              arabic: ["Cairo", "sans-serif"],
+              latin: ["Inter", "sans-serif"]
+            },
+            boxShadow: {
+              emerald: "0 0 28px rgba(0, 230, 118, .32)",
+              gold: "0 0 26px rgba(255, 215, 0, .25)",
+              panel: "0 18px 60px rgba(0, 0, 0, .38)"
+            },
+            backgroundImage: {
+              metal: "linear-gradient(135deg, #2c3e50 0%, #111827 48%, #000000 100%)",
+              emeraldGlass:
+                "linear-gradient(135deg, rgba(0,230,118,.16), rgba(22,27,34,.88) 48%, rgba(255,255,255,.04))",
+              goldGlass:
+                "linear-gradient(135deg, rgba(255,215,0,.20), rgba(22,27,34,.88) 48%, rgba(255,255,255,.04))"
+            },
+            keyframes: {
+              ticker: {
+                "0%": { transform: "translateX(-100%)" },
+                "100%": { transform: "translateX(100%)" }
+              },
+              payoutLoop: {
+                "0%": { transform: "translateY(0)" },
+                "100%": { transform: "translateY(-50%)" }
+              },
+              shimmer: {
+                "0%": { backgroundPosition: "-200% center" },
+                "100%": { backgroundPosition: "200% center" }
+              },
+              pulseGlow: {
+                "0%, 100%": { boxShadow: "0 0 0 rgba(0,230,118,0)" },
+                "50%": { boxShadow: "0 0 30px rgba(0,230,118,.42)" }
+              }
+            },
+            animation: {
+              ticker: "ticker 18s linear infinite",
+              payoutLoop: "payoutLoop 18s linear infinite",
+              shimmer: "shimmer 4s linear infinite",
+              pulseGlow: "pulseGlow 2.4s ease-in-out infinite"
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        font-family: "Cairo", sans-serif;
+        background:
+          radial-gradient(circle at 20% -10%, rgba(0, 230, 118, 0.16), transparent 32rem),
+          radial-gradient(circle at 85% 20%, rgba(255, 215, 0, 0.08), transparent 26rem),
+          #0d0f12;
+      }
+
+      .font-money {
+        font-family: "Inter", "Cairo", sans-serif;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .glass-card {
+        border: 1px solid #30363d;
+        background: linear-gradient(180deg, rgba(22, 27, 34, 0.92), rgba(13, 15, 18, 0.82));
+        box-shadow: 0 18px 60px rgba(0, 0, 0, 0.38);
+        backdrop-filter: blur(18px);
+      }
+
+      .soft-card {
+        border: 1px solid #30363d;
+        background: rgba(22, 27, 34, 0.84);
+      }
+
+      .screen {
+        display: none;
+      }
+
+      .screen.active {
+        display: block;
+      }
+
+      .banner-slide {
+        opacity: 0;
+        transform: translateX(18px) scale(0.98);
+        transition:
+          opacity 520ms ease,
+          transform 520ms ease;
+      }
+
+      .banner-slide.active {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+
+      .claim-button.unlocked {
+        color: #00190d;
+        background: #00e676;
+        box-shadow: 0 0 28px rgba(0, 230, 118, 0.42);
+        opacity: 1;
+      }
+
+      .bottom-safe {
+        padding-bottom: calc(88px + env(safe-area-inset-bottom));
+      }
+
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+
+      .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen text-white">
+    <main class="mx-auto min-h-screen w-full max-w-[430px] overflow-hidden border-x border-slateLine/70 bg-obsidian bottom-safe">
+      <header class="sticky top-0 z-40 border-b border-slateLine/80 bg-obsidian/86 px-4 py-3 backdrop-blur-xl">
+        <div class="flex items-center justify-between" dir="ltr">
+          <button
+            class="grid h-11 w-11 place-items-center rounded-2xl border border-slateLine bg-slateCard text-mutedSilver"
+            type="button"
+            data-screen-target="profile"
+            aria-label="Open profile"
+          >
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21a8 8 0 0 0-16 0" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </button>
+
+          <div class="text-center">
+            <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-emeraldNeon">Secure video earning</p>
+            <h1 class="font-latin text-lg font-black tracking-tight">VidiX</h1>
+          </div>
+
+          <div class="flex rounded-2xl border border-slateLine bg-slateCard p-1 text-xs font-black">
+            <button class="rounded-xl bg-emeraldNeon px-3 py-2 text-obsidian" type="button">AR</button>
+            <button class="px-3 py-2 text-mutedSilver" type="button">EN</button>
+          </div>
+        </div>
+      </header>
+
+      <section id="screen-home" class="screen active px-4 py-4">
+        <section class="glass-card rounded-2xl p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-bold text-mutedSilver">رصيد المحفظة</p>
+              <strong class="font-money text-3xl font-black text-emeraldNeon" data-home-balance>$0.00</strong>
+            </div>
+            <span class="rounded-full border border-emeraldNeon/40 bg-emeraldNeon/10 px-3 py-1 text-xs font-black text-emeraldNeon">
+              Verified
+            </span>
+          </div>
+          <div class="mt-4 grid grid-cols-3 gap-2">
+            <div class="rounded-2xl border border-slateLine bg-frost p-3">
+              <p class="text-xs text-mutedSilver">اليوم</p>
+              <strong class="font-money text-lg text-white" data-home-income>$0.00</strong>
+            </div>
+            <div class="rounded-2xl border border-slateLine bg-frost p-3">
+              <p class="text-xs text-mutedSilver">VIP</p>
+              <strong class="font-money text-lg text-vipGold" data-home-vip>M0</strong>
+            </div>
+            <div class="rounded-2xl border border-slateLine bg-frost p-3">
+              <p class="text-xs text-mutedSilver">المهام</p>
+              <strong class="font-money text-lg text-white">8/12</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="relative mt-4 h-44 overflow-hidden rounded-2xl border border-slateLine bg-slateCard shadow-panel">
+          <article
+            class="banner-slide active absolute inset-0 flex flex-col justify-end bg-cover bg-center p-5"
+            style="background-image: linear-gradient(180deg, rgba(13,15,18,.1), rgba(13,15,18,.9)), url('https://images.unsplash.com/photo-1642104704074-907c0698cbd9?auto=format&fit=crop&w=900&q=85');"
+          >
+            <span class="w-max rounded-full bg-emeraldNeon/15 px-3 py-1 text-xs font-black text-emeraldNeon">Task Season</span>
+            <h2 class="mt-2 text-2xl font-black leading-tight">مهام فيديو بعوائد يومية ثابتة</h2>
+            <p class="mt-1 text-sm text-mutedSilver">شاهد، انتظر العداد، واستلم العمولة فورًا.</p>
+          </article>
+          <article
+            class="banner-slide absolute inset-0 flex flex-col justify-end bg-cover bg-center p-5"
+            style="background-image: linear-gradient(180deg, rgba(13,15,18,.1), rgba(13,15,18,.9)), url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=900&q=85');"
+          >
+            <span class="w-max rounded-full bg-vipGold/15 px-3 py-1 text-xs font-black text-vipGold">VIP Club</span>
+            <h2 class="mt-2 text-2xl font-black leading-tight">ترقية M10 بعوائد أعلى</h2>
+            <p class="mt-1 text-sm text-mutedSilver">مستويات ذهبية، مهام أكثر، ومكافآت أكبر.</p>
+          </article>
+          <article
+            class="banner-slide absolute inset-0 flex flex-col justify-end bg-cover bg-center p-5"
+            style="background-image: linear-gradient(180deg, rgba(13,15,18,.1), rgba(13,15,18,.9)), url('https://images.unsplash.com/photo-1640340434855-6084b1f4901c?auto=format&fit=crop&w=900&q=85');"
+          >
+            <span class="w-max rounded-full bg-white/10 px-3 py-1 text-xs font-black text-white">Crypto Pay</span>
+            <h2 class="mt-2 text-2xl font-black leading-tight">USDT TRC20 Deposit Ready</h2>
+            <p class="mt-1 text-sm text-mutedSilver">إيصال، TxID، ومراجعة آمنة قبل إضافة الرصيد.</p>
+          </article>
+        </section>
+
+        <section class="glass-card mt-4 overflow-hidden rounded-2xl">
+          <div class="flex items-center justify-between gap-3 border-b border-slateLine px-4 py-3">
+            <div>
+              <p class="text-xs font-black uppercase tracking-[0.18em] text-emeraldNeon">VidiX Ads</p>
+              <h2 class="text-lg font-black">إعلانات المنصة</h2>
+            </div>
+            <span class="rounded-full border border-vipGold/40 bg-vipGold/10 px-3 py-1 text-xs font-black text-vipGold">Premium</span>
+          </div>
+          <div class="relative bg-black">
+            <video
+              id="ad-video-player"
+              class="aspect-video w-full object-cover"
+              src="/assets/videos/vidix-ad-1.mp4"
+              autoplay
+              loop
+              muted
+              playsinline
+              preload="metadata"
+            ></video>
+          </div>
+        </section>
+
+        <section class="mt-4 overflow-hidden rounded-2xl border border-emeraldNeon/25 bg-emeraldNeon/10 px-4 py-3 shadow-emerald">
+          <div class="flex items-center gap-3">
+            <svg class="h-5 w-5 shrink-0 text-emeraldNeon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 11v2a1 1 0 0 0 1 1h3l5 4V6L8 10H5a1 1 0 0 0-1 1Z" />
+              <path d="M16 9a5 5 0 0 1 0 6" />
+              <path d="M19 6a9 9 0 0 1 0 12" />
+            </svg>
+            <div class="min-w-0 flex-1 overflow-hidden" dir="ltr">
+              <p class="animate-ticker whitespace-nowrap text-sm font-bold text-white">
+                Security update: withdrawals are reviewed within 24 hours • VIP M4 campaign active • Never share your fund password
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-4 grid grid-cols-3 gap-3">
+          <button class="quick-card" type="button" data-screen-target="deposit">
+            <span class="quick-icon text-emeraldNeon">
+              <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            </span>
+            <strong>Deposit</strong>
+          </button>
+          <button class="quick-card" type="button" data-screen-target="withdraw">
+            <span class="quick-icon text-emeraldNeon">
+              <svg viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10" /></svg>
+            </span>
+            <strong>Withdraw</strong>
+          </button>
+          <button class="quick-card" type="button" data-screen-target="team">
+            <span class="quick-icon text-vipGold">
+              <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            </span>
+            <strong>Invite</strong>
+          </button>
+          <button class="quick-card" type="button">
+            <span class="quick-icon text-white">
+              <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z" /></svg>
+            </span>
+            <strong>Guide</strong>
+          </button>
+          <button class="quick-card" type="button">
+            <span class="quick-icon text-vipGold">
+              <svg viewBox="0 0 24 24"><path d="M12 15 8.5 18l1-4.5L6 10.5l4.6-.4L12 6l1.4 4.1 4.6.4-3.5 3 1 4.5z" /><path d="M4 22h16" /></svg>
+            </span>
+            <strong>Certificates</strong>
+          </button>
+          <button class="quick-card" type="button">
+            <span class="quick-icon text-white">
+              <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-4" /><path d="M9 9v.01M9 13v.01M9 17v.01" /></svg>
+            </span>
+            <strong>About Us</strong>
+          </button>
+        </section>
+
+        <section class="glass-card mt-4 rounded-2xl p-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-black">Live Payout Tracker</h2>
+            <span class="rounded-full bg-emeraldNeon/10 px-3 py-1 text-xs font-black text-emeraldNeon">LIVE</span>
+          </div>
+          <div class="mt-3 h-48 overflow-hidden">
+            <div class="animate-payoutLoop space-y-3">
+              <div class="payout-row"><span>User +2010****** completed task M3</span><strong>$4.50</strong></div>
+              <div class="payout-row"><span>User +9715****** claimed VIP M5 reward</span><strong>$12.00</strong></div>
+              <div class="payout-row"><span>User +9665****** finished cinema task</span><strong>$2.20</strong></div>
+              <div class="payout-row"><span>User +2011****** team commission Level A</span><strong>$8.75</strong></div>
+              <div class="payout-row"><span>User +9656****** investment daily yield</span><strong>$19.40</strong></div>
+              <div class="payout-row"><span>User +2010****** completed task M3</span><strong>$4.50</strong></div>
+              <div class="payout-row"><span>User +9715****** claimed VIP M5 reward</span><strong>$12.00</strong></div>
+              <div class="payout-row"><span>User +9665****** finished cinema task</span><strong>$2.20</strong></div>
+              <div class="payout-row"><span>User +2011****** team commission Level A</span><strong>$8.75</strong></div>
+              <div class="payout-row"><span>User +9656****** investment daily yield</span><strong>$19.40</strong></div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section id="screen-auth" class="screen px-4 py-4">
+        <div class="glass-card rounded-3xl p-5">
+          <div class="mb-5 text-center">
+            <p class="text-xs font-black uppercase tracking-[0.22em] text-emeraldNeon">Secure Access</p>
+            <h2 class="mt-2 text-3xl font-black">تسجيل الدخول</h2>
+            <p class="mt-1 text-sm text-mutedSilver">حساب، كود دعوة، وكلمة عمليات مالية منفصلة.</p>
+          </div>
+
+          <div class="mb-4 grid grid-cols-2 rounded-2xl border border-slateLine bg-frost p-1">
+            <button class="auth-tab rounded-xl bg-emeraldNeon py-3 font-black text-obsidian" type="button" data-auth-mode="login">Login</button>
+            <button class="auth-tab rounded-xl py-3 font-black text-mutedSilver" type="button" data-auth-mode="signup">Sign Up</button>
+          </div>
+
+          <form class="space-y-4" id="auth-form">
+            <label class="field-label">
+              البريد الإلكتروني
+              <input id="auth-email" class="field-input" type="email" placeholder="member@example.com" required />
+            </label>
+            <label class="field-label">
+              كلمة مرور الحساب
+              <input id="auth-password" class="field-input" type="password" placeholder="••••••••" required />
+            </label>
+            <label class="field-label signup-field hidden">
+              كود الدعوة
+              <input id="auth-referral" class="field-input" type="text" placeholder="VX-ROOT" required />
+            </label>
+            <label class="field-label signup-field hidden">
+              كلمة مرور العمليات المالية
+              <input id="auth-fund-password" class="field-input" type="password" placeholder="6 أرقام أو أكثر" required />
+            </label>
+            <button id="auth-submit" class="h-14 w-full rounded-2xl bg-emeraldNeon font-black text-obsidian shadow-emerald" type="submit">
+              متابعة آمنة
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <section id="screen-tasks" class="screen px-4 py-4">
+        <div class="mb-4 flex items-end justify-between">
+          <div>
+            <p class="text-xs font-black uppercase tracking-[0.18em] text-vipGold">Task Hall</p>
+            <h2 class="text-2xl font-black">قاعة المهام</h2>
+          </div>
+          <span class="rounded-full border border-vipGold/40 bg-vipGold/10 px-3 py-1 text-xs font-black text-vipGold">VIP M3</span>
+        </div>
+
+        <div class="hide-scrollbar mb-4 flex gap-2 overflow-x-auto pb-1">
+          <button class="vip-chip active">M0</button>
+          <button class="vip-chip">M1</button>
+          <button class="vip-chip">M2</button>
+          <button class="vip-chip">M3</button>
+          <button class="vip-chip">M4</button>
+          <button class="vip-chip">M5</button>
+        </div>
+
+        <div class="space-y-4" id="task-list"></div>
+      </section>
+
+      <section id="screen-watch" class="screen px-4 py-4">
+        <button class="mb-4 flex items-center gap-2 text-sm font-black text-mutedSilver" type="button" data-screen-target="tasks">
+          <span>رجوع</span>
+        </button>
+
+        <section class="overflow-hidden rounded-3xl border border-slateLine bg-black shadow-panel">
+          <div
+            class="relative aspect-video bg-cover bg-center"
+            id="watch-cover"
+            style="background-image: linear-gradient(180deg, rgba(0,0,0,.1), rgba(0,0,0,.72)), url('https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=900&q=85');"
+          >
+            <div class="absolute inset-0 grid place-items-center">
+              <div class="grid h-20 w-20 place-items-center rounded-full border border-white/30 bg-white/10 backdrop-blur-xl">
+                <svg class="h-9 w-9 translate-x-0.5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            </div>
+            <div class="absolute bottom-4 right-4">
+              <p class="text-xs font-black uppercase tracking-[0.18em] text-emeraldNeon">Watch Task</p>
+              <h2 class="text-2xl font-black" id="watch-title">Shadow Mission Trailer</h2>
+            </div>
+          </div>
+        </section>
+
+        <section class="glass-card mt-4 rounded-3xl p-5 text-center">
+          <p class="text-sm font-bold text-mutedSilver">Remaining Watch Time</p>
+          <strong class="font-money text-5xl font-black text-white"><span id="countdown-value">12</span>s</strong>
+          <div class="mt-5 h-3 overflow-hidden rounded-full bg-white/10">
+            <div id="countdown-bar" class="h-full w-full rounded-full bg-emeraldNeon transition-all duration-1000 ease-linear"></div>
+          </div>
+          <button
+            id="claim-button"
+            class="claim-button mt-6 h-14 w-full rounded-2xl bg-[#2b3138] font-black text-mutedSilver opacity-60 transition-all duration-300"
+            type="button"
+            disabled
+          >
+            Claim Reward / استلام المكافأة
+          </button>
+        </section>
+      </section>
+
+      <section id="screen-vip" class="screen px-4 py-4">
+        <div class="mb-4">
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-vipGold">VIP Board</p>
+          <h2 class="text-2xl font-black">مستويات العضوية</h2>
+        </div>
+
+        <div class="space-y-4">
+          <article class="vip-card"><span>VIP-0</span><h3>M0 Trial</h3><p>1 daily task • $0.25 reward • Free unlock</p><button data-vip-level="M0" type="button">Current Status</button></article>
+          <article class="vip-card"><span>VIP-1</span><h3>M1 Starter</h3><p>2 daily tasks • $0.55 reward • Unlock $20</p><button data-vip-level="M1" type="button">Join Now</button></article>
+          <article class="vip-card"><span>VIP-2</span><h3>M2 Growth</h3><p>5 daily tasks • $1.00 reward • Unlock $125</p><button data-vip-level="M2" type="button">Join Now</button></article>
+          <article class="vip-card"><span>VIP-3</span><h3>M3 Prime</h3><p>8 daily tasks • $1.35 reward • Unlock $250</p><button data-vip-level="M3" type="button">Join Now</button></article>
+          <article class="vip-card"><span>VIP-4</span><h3>M4 Elite</h3><p>14 daily tasks • $2.20 reward • Unlock $700</p><button data-vip-level="M4" type="button">Join Now</button></article>
+          <article class="vip-card"><span>VIP-5</span><h3>M5 Executive</h3><p>22 daily tasks • $4.00 reward • Unlock $2,300</p><button data-vip-level="M5" type="button">Join Now</button></article>
+          <article class="vip-card"><span>VIP-6</span><h3>M6 Platinum</h3><p>32 daily tasks • $6.50 reward • Unlock $5,000</p><button data-vip-level="M6" type="button">Join Now</button></article>
+          <article class="vip-card"><span>VIP-7</span><h3>M7 Diamond</h3><p>44 daily tasks • $8.75 reward • Unlock $9,000</p><button data-vip-level="M7" type="button">Join Now</button></article>
+          <article class="vip-card"><span>VIP-8</span><h3>M8 Royal</h3><p>58 daily tasks • $11.00 reward • Unlock $15,000</p><button data-vip-level="M8" type="button">Join Now</button></article>
+          <article class="vip-card"><span>VIP-9</span><h3>M9 Sovereign</h3><p>72 daily tasks • $15.00 reward • Unlock $25,000</p><button data-vip-level="M9" type="button">Join Now</button></article>
+          <article class="vip-card"><span>VIP-10</span><h3>M10 Apex</h3><p>100 daily tasks • $21.00 reward • Unlock $50,000</p><button data-vip-level="M10" type="button">Join Now</button></article>
+        </div>
+      </section>
+
+      <section id="screen-deposit" class="screen px-4 py-4">
+        <h2 class="text-2xl font-black">الشحن</h2>
+        <section class="glass-card mt-4 rounded-3xl p-5">
+          <p class="text-sm font-bold text-mutedSilver">اختر مبلغ الشحن</p>
+          <div class="mt-3 grid grid-cols-3 gap-2">
+            <button class="amount-button active" type="button" data-amount="20">$20</button>
+            <button class="amount-button" type="button" data-amount="125">$125</button>
+            <button class="amount-button" type="button" data-amount="250">$250</button>
+            <button class="amount-button" type="button" data-amount="700">$700</button>
+            <button class="amount-button" type="button" data-amount="2300">$2300</button>
+            <button class="amount-button" type="button" data-amount="5000">$5000</button>
+          </div>
+          <label class="field-label mt-4">
+            Amount
+            <input id="deposit-amount" class="field-input font-money" type="number" value="20" />
+          </label>
+          <p id="deposit-fx-note" class="mt-2 text-xs font-bold text-mutedSilver">USDT/EGP rate will load from Firebase.</p>
+          <div class="mt-4">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-black text-white">طرق الدفع</p>
+              <span class="rounded-full border border-vipGold/40 bg-vipGold/10 px-3 py-1 text-xs font-black text-vipGold">Manual review</span>
+            </div>
+            <div class="mt-3 grid gap-3" id="payment-methods"></div>
+          </div>
+          <label class="field-label mt-4">
+            TxID / Hash
+            <input id="deposit-txid" class="field-input" type="text" placeholder="TRC20 transaction hash" />
+          </label>
+          <label class="mt-4 flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slateLine bg-frost p-4 text-center">
+            <span class="text-sm font-black text-white">Upload Receipt Image</span>
+            <span id="receipt-name" class="mt-1 text-xs text-mutedSilver">PNG, JPG, WEBP</span>
+            <input id="receipt-file" class="hidden" type="file" accept="image/*" />
+          </label>
+          <button id="deposit-submit" class="mt-5 h-14 w-full rounded-2xl bg-emeraldNeon font-black text-obsidian shadow-emerald" type="button">Submit Deposit</button>
+        </section>
+      </section>
+
+      <section id="screen-withdraw" class="screen px-4 py-4">
+        <h2 class="text-2xl font-black">السحب</h2>
+        <section class="glass-card mt-4 rounded-3xl p-5">
+          <div class="rounded-2xl border border-slateLine bg-frost p-4">
+            <p class="text-xs font-bold text-mutedSilver">Bound Wallet</p>
+            <p id="withdraw-wallet-display" class="mt-2 truncate font-latin text-sm text-white" dir="ltr">Bind a wallet in profile first</p>
+            <input id="withdraw-wallet" type="hidden" />
+          </div>
+          <label class="field-label mt-4">
+            Wallet Source
+            <select id="withdraw-source" class="field-input">
+              <option value="commission">Commission Wallet</option>
+              <option value="main">Main Wallet</option>
+            </select>
+          </label>
+          <label class="field-label mt-4">
+            مبلغ السحب
+            <input id="withdraw-amount" class="field-input font-money" type="number" placeholder="50.00" />
+          </label>
+          <p id="withdraw-fee-note" class="mt-2 text-xs font-bold text-mutedSilver">Fee will load from Firebase.</p>
+          <label class="field-label mt-4">
+            كلمة مرور الصندوق
+            <input id="withdraw-fund-password" class="field-input" type="password" placeholder="••••••" />
+          </label>
+          <button id="withdraw-submit" class="mt-5 h-14 w-full rounded-2xl bg-emeraldNeon font-black text-obsidian shadow-emerald" type="button">Request Withdrawal</button>
+        </section>
+      </section>
+
+      <section id="screen-fund" class="screen px-4 py-4">
+        <h2 class="text-2xl font-black">صندوق الاستثمار</h2>
+        <div class="mt-4 space-y-4">
+          <article class="fund-card"><span>180 Days</span><h3>Avengers: Doomsday Plan</h3><p>Daily profit 2.00% • Principal + interest at maturity</p><button data-invest-plan="doomsday-180" type="button">Invest Now</button></article>
+          <article class="fund-card"><span>90 Days</span><h3>Sapphire Growth Plan</h3><p>Daily profit 1.20% • Short-term locked asset plan</p><button data-invest-plan="sapphire-90" type="button">Invest Now</button></article>
+          <article class="fund-card"><span>365 Days</span><h3>Emerald Reserve</h3><p>Daily profit 2.50% • Long-term premium treasury plan</p><button data-invest-plan="emerald-365" type="button">Invest Now</button></article>
+        </div>
+      </section>
+
+      <section id="screen-team" class="screen px-4 py-4">
+        <h2 class="text-2xl font-black">تقرير الفريق</h2>
+        <section class="mt-4 grid grid-cols-2 gap-3">
+          <div class="glass-card rounded-2xl p-4">
+            <p class="text-xs text-mutedSilver">Total Commission</p>
+            <strong class="font-money text-2xl font-black text-emeraldNeon">$1,284.60</strong>
+          </div>
+          <div class="glass-card rounded-2xl p-4">
+            <p class="text-xs text-mutedSilver">Active Downlines</p>
+            <strong class="font-money text-2xl font-black">247</strong>
+          </div>
+        </section>
+
+        <div class="mt-4 grid grid-cols-3 rounded-2xl border border-slateLine bg-frost p-1">
+          <button class="team-tab active" type="button" data-team-tab="A">Level A</button>
+          <button class="team-tab" type="button" data-team-tab="B">Level B</button>
+          <button class="team-tab" type="button" data-team-tab="C">Level C</button>
+        </div>
+
+        <section class="team-panel mt-4 space-y-3 active" data-team-panel="A">
+          <div class="downline-row"><span>010****542</span><small>2026-06-01</small><strong>M3</strong></div>
+          <div class="downline-row"><span>011****872</span><small>2026-05-28</small><strong>M5</strong></div>
+          <div class="downline-row"><span>012****103</span><small>2026-05-21</small><strong>M1</strong></div>
+        </section>
+        <section class="team-panel mt-4 hidden space-y-3" data-team-panel="B">
+          <div class="downline-row"><span>010****881</span><small>2026-05-19</small><strong>M2</strong></div>
+          <div class="downline-row"><span>015****229</span><small>2026-05-12</small><strong>M4</strong></div>
+          <div class="downline-row"><span>011****649</span><small>2026-05-09</small><strong>M1</strong></div>
+        </section>
+        <section class="team-panel mt-4 hidden space-y-3" data-team-panel="C">
+          <div class="downline-row"><span>012****771</span><small>2026-05-07</small><strong>M0</strong></div>
+          <div class="downline-row"><span>010****406</span><small>2026-04-30</small><strong>M2</strong></div>
+          <div class="downline-row"><span>015****118</span><small>2026-04-25</small><strong>M3</strong></div>
+        </section>
+      </section>
+
+      <section id="screen-profile" class="screen px-4 py-4">
+        <section class="glass-card rounded-3xl p-5 text-center">
+          <div class="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-emeraldGlass text-2xl font-black text-emeraldNeon">VX</div>
+          <h2 class="mt-3 text-2xl font-black">حسابي</h2>
+          <p class="text-sm text-mutedSilver" data-profile-uid>Not signed in</p>
+        </section>
+
+        <section class="mt-4 grid grid-cols-2 gap-3">
+          <div class="profile-stat"><span>Main Balance</span><strong data-main-balance>$0.00</strong></div>
+          <div class="profile-stat"><span>Commission</span><strong data-commission-balance>$0.00</strong></div>
+          <div class="profile-stat"><span>Today</span><strong data-today-income>$0.00</strong></div>
+          <div class="profile-stat"><span>Total Revenue</span><strong data-total-income>$0.00</strong></div>
+        </section>
+
+        <section class="mt-4 space-y-3">
+          <a class="profile-link" href="#">Invoice Details</a>
+          <a class="profile-link" href="#">Financial Fund Logs</a>
+          <a class="profile-link" href="#">Bind Crypto Wallet</a>
+          <a class="profile-link" href="#">Reset Fund Password</a>
+          <a class="profile-link" href="/admin.html">Admin Panel</a>
+          <a class="profile-link" href="#">App Download</a>
+        </section>
+      </section>
+    </main>
+
+    <nav class="fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-[430px] border-x border-t border-slateLine bg-obsidian/92 px-2 pb-[calc(8px+env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
+      <div class="grid grid-cols-5 gap-1">
+        <button class="nav-button active" type="button" data-screen-target="home">
+          <svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" /></svg>
+          <span>الرئيسية</span>
+        </button>
+        <button class="nav-button" type="button" data-screen-target="tasks">
+          <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m10 9 5 3-5 3z" /></svg>
+          <span>المهام</span>
+        </button>
+        <button class="nav-button" type="button" data-screen-target="vip">
+          <svg viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 12L2 9z" /><path d="M11 3 8 9l4 12 4-12-3-6" /></svg>
+          <span>VIP</span>
+        </button>
+        <button class="nav-button" type="button" data-screen-target="deposit">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+          <span>شحن</span>
+        </button>
+        <button class="nav-button" type="button" data-screen-target="profile">
+          <svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0" /><circle cx="12" cy="7" r="4" /></svg>
+          <span>حسابي</span>
+        </button>
+      </div>
+    </nav>
+
+    <div id="toast" class="pointer-events-none fixed bottom-24 left-1/2 z-[60] hidden w-[min(360px,calc(100vw-32px))] -translate-x-1/2 rounded-2xl border border-slateLine bg-slateCard px-4 py-3 text-center text-sm font-bold text-white shadow-panel"></div>
+
+    <script>
+      const styles = document.createElement("style");
+      styles.textContent = `
+        .quick-card { min-height: 104px; border: 1px solid #30363d; border-radius: 16px; background: rgba(22,27,34,.84); padding: 12px; display: grid; justify-items: center; align-content: center; gap: 8px; font-size: 12px; color: #fff; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+        .quick-card:hover { transform: translateY(-2px); border-color: rgba(0,230,118,.55); box-shadow: 0 0 24px rgba(0,230,118,.18); }
+        .quick-icon { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.03)); border: 1px solid #30363d; }
+        .quick-icon svg, .nav-button svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .payout-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid #30363d; border-radius: 14px; background: rgba(255,255,255,.04); padding: 11px 12px; color: #8b949e; font-size: 12px; }
+        .payout-row strong { color: #00e676; font-family: Inter, Cairo, sans-serif; font-weight: 900; }
+        .field-label { display: grid; gap: 8px; color: #8b949e; font-size: 13px; font-weight: 800; }
+        .field-input { height: 52px; width: 100%; border-radius: 16px; border: 1px solid #30363d; background: rgba(255,255,255,.05); padding: 0 14px; color: #fff; outline: none; }
+        .field-input:focus { border-color: rgba(0,230,118,.7); box-shadow: 0 0 0 3px rgba(0,230,118,.12); }
+        .vip-chip { min-width: 58px; height: 38px; border-radius: 14px; border: 1px solid #30363d; background: rgba(22,27,34,.84); color: #8b949e; font-weight: 900; font-family: Inter, Cairo, sans-serif; }
+        .vip-chip.active { border-color: rgba(255,215,0,.62); color: #ffd700; background: rgba(255,215,0,.12); box-shadow: 0 0 22px rgba(255,215,0,.16); }
+        .task-card { overflow: hidden; border: 1px solid #30363d; border-radius: 24px; background: rgba(22,27,34,.84); box-shadow: 0 18px 60px rgba(0,0,0,.32); }
+        .task-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; }
+        .vip-card { position: relative; overflow: hidden; border: 1px solid rgba(255,215,0,.28); border-radius: 22px; background: linear-gradient(135deg, #2c3e50 0%, #111827 48%, #000 100%); padding: 18px; box-shadow: 0 18px 60px rgba(0,0,0,.32); }
+        .vip-card::before { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,.08) 45%, transparent 60%); background-size: 220% 100%; animation: shimmer 4s linear infinite; pointer-events: none; }
+        .vip-card span { display: inline-flex; border-radius: 999px; border: 1px solid rgba(255,215,0,.45); background: rgba(255,215,0,.13); padding: 5px 10px; color: #ffd700; font-family: Inter, Cairo, sans-serif; font-size: 12px; font-weight: 900; }
+        .vip-card h3 { margin-top: 12px; font-size: 22px; font-weight: 900; }
+        .vip-card p { margin-top: 4px; color: #8b949e; font-size: 13px; }
+        .vip-card button, .fund-card button { margin-top: 14px; height: 44px; border-radius: 14px; background: #ffd700; color: #0d0f12; padding: 0 16px; font-weight: 900; }
+        .amount-button { height: 46px; border-radius: 14px; border: 1px solid #30363d; background: rgba(255,255,255,.05); color: #fff; font-family: Inter, Cairo, sans-serif; font-weight: 900; }
+        .amount-button.active { border-color: rgba(0,230,118,.72); background: rgba(0,230,118,.12); color: #00e676; }
+        .fund-card { border: 1px solid rgba(255,215,0,.28); border-radius: 22px; background: linear-gradient(135deg, rgba(255,215,0,.16), rgba(22,27,34,.88) 48%, rgba(255,255,255,.04)); padding: 18px; box-shadow: 0 18px 60px rgba(0,0,0,.32); }
+        .fund-card span { color: #ffd700; font-family: Inter, Cairo, sans-serif; font-weight: 900; font-size: 12px; }
+        .fund-card h3 { margin-top: 8px; font-size: 20px; font-weight: 900; }
+        .fund-card p { margin-top: 6px; color: #8b949e; font-size: 13px; }
+        .team-tab { height: 44px; border-radius: 14px; color: #8b949e; font-family: Inter, Cairo, sans-serif; font-weight: 900; }
+        .team-tab.active { background: #00e676; color: #0d0f12; }
+        .downline-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; border: 1px solid #30363d; border-radius: 16px; background: rgba(22,27,34,.84); padding: 14px; }
+        .downline-row span { font-family: Inter, Cairo, sans-serif; font-weight: 900; direction: ltr; text-align: left; }
+        .downline-row small { color: #8b949e; font-family: Inter, Cairo, sans-serif; }
+        .downline-row strong { color: #ffd700; font-family: Inter, Cairo, sans-serif; }
+        .profile-stat { border: 1px solid #30363d; border-radius: 18px; background: rgba(22,27,34,.84); padding: 14px; }
+        .profile-stat span { display: block; color: #8b949e; font-size: 12px; }
+        .profile-stat strong { display: block; margin-top: 5px; color: #00e676; font-family: Inter, Cairo, sans-serif; font-weight: 900; font-size: 18px; }
+        .profile-link { display: flex; align-items: center; justify-content: space-between; min-height: 52px; border: 1px solid #30363d; border-radius: 16px; background: rgba(22,27,34,.84); padding: 0 14px; color: #fff; font-weight: 800; }
+        .nav-button { min-height: 60px; border-radius: 16px; color: #8b949e; display: grid; justify-items: center; align-content: center; gap: 4px; font-size: 11px; font-weight: 900; }
+        .nav-button.active { background: rgba(0,230,118,.12); color: #00e676; box-shadow: inset 0 0 0 1px rgba(0,230,118,.25); }
+      `;
+      document.head.appendChild(styles);
+
+      const screens = document.querySelectorAll(".screen");
+      const navButtons = document.querySelectorAll("[data-screen-target]");
+      const bottomNavButtons = document.querySelectorAll(".nav-button");
+      const toast = document.getElementById("toast");
+      let countdownTimer = null;
+      let activeTaskReward = "$1.00";
+      let legacyTasks = [];
+
+      function showScreen(name) {
+        screens.forEach((screen) => screen.classList.toggle("active", screen.id === `screen-${name}`));
+        bottomNavButtons.forEach((button) => button.classList.toggle("active", button.dataset.screenTarget === name));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.remove("hidden");
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.add("hidden"), 2200);
+      }
+
+      navButtons.forEach((button) => {
+        button.addEventListener("click", () => showScreen(button.dataset.screenTarget));
+      });
+
+      const slides = [...document.querySelectorAll(".banner-slide")];
+      let slideIndex = 0;
+      setInterval(() => {
+        slides[slideIndex].classList.remove("active");
+        slideIndex = (slideIndex + 1) % slides.length;
+        slides[slideIndex].classList.add("active");
+      }, 4200);
+
+      const adVideos = ["/assets/videos/vidix-ad-1.mp4", "/assets/videos/vidix-ad-2.mp4"];
+      let activeAdVideoIndex = 0;
+
+      function switchAdVideo(nextIndex, autoplay = true) {
+        const player = document.getElementById("ad-video-player");
+        const nextSrc = adVideos[nextIndex];
+        if (!player || !nextSrc) return;
+
+        activeAdVideoIndex = nextIndex;
+        if (player.getAttribute("src") !== nextSrc) {
+          player.pause();
+          player.setAttribute("src", nextSrc);
+          player.load();
+        }
+
+        if (autoplay) {
+          player.muted = true;
+          player.play().catch(() => {
+            showToast("اضغط تشغيل مرة واحدة لتفعيل عرض الإعلانات التلقائي");
+          });
+        }
+      }
+
+      switchAdVideo(0, true);
+      document.getElementById("ad-video-player")?.addEventListener("ended", (event) => {
+        event.currentTarget.currentTime = 0;
+        event.currentTarget.play().catch(() => {});
+      });
+      setInterval(() => {
+        switchAdVideo((activeAdVideoIndex + 1) % adVideos.length, true);
+      }, 120000);
+
+      document.querySelectorAll("[data-auth-mode]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const mode = button.dataset.authMode;
+          document.querySelectorAll("[data-auth-mode]").forEach((tab) => {
+            tab.classList.toggle("bg-emeraldNeon", tab === button);
+            tab.classList.toggle("text-obsidian", tab === button);
+            tab.classList.toggle("text-mutedSilver", tab !== button);
+          });
+          document.querySelectorAll(".signup-field").forEach((field) => field.classList.toggle("hidden", mode !== "signup"));
+        });
+      });
+
+      function getLocalTasks() {
+        return legacyTasks;
+      }
+
+      function money(value) {
+        return `$${Number(value || 0).toFixed(2)}`;
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function renderTaskHall() {
+        const taskList = document.getElementById("task-list");
+        const tasks = getLocalTasks().filter((task) => task.status === "active");
+        taskList.innerHTML = tasks
+          .map(
+            (task) => `
+              <article class="task-card" data-task-id="${escapeHtml(task.id)}">
+                <img src="${escapeHtml(task.posterUrl)}" alt="${escapeHtml(task.title)}" />
+                <div class="p-4">
+                  <div class="flex items-center justify-between gap-3">
+                    <h3 class="text-lg font-black">${escapeHtml(task.title)}</h3>
+                    <strong class="font-money text-emeraldNeon">${money(task.reward)}</strong>
+                  </div>
+                  <p class="mt-1 text-sm text-mutedSilver">${Number(task.durationSeconds || 12)} seconds watch task - ${escapeHtml(task.vipRequired || "M0")}</p>
+                  <button class="mt-4 h-12 w-full rounded-2xl bg-emeraldNeon font-black text-obsidian" type="button" data-start-task="${escapeHtml(task.id)}">Start Watch</button>
+                </div>
+              </article>
+            `
+          )
+          .join("");
+
+        taskList.querySelectorAll("[data-start-task]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const task = tasks.find((item) => item.id === button.dataset.startTask);
+            if (!task) return;
+            activeTaskReward = money(task.reward);
+            document.getElementById("watch-title").textContent = task.title;
+            document.getElementById("watch-cover").style.backgroundImage = `linear-gradient(180deg, rgba(0,0,0,.1), rgba(0,0,0,.72)), url('${task.posterUrl}')`;
+            startCountdown(Number(task.durationSeconds || 12));
+            showScreen("watch");
+          });
+        });
+      }
+
+      function startCountdown(totalSeconds = 12) {
+        clearInterval(countdownTimer);
+        let remaining = Math.max(1, totalSeconds);
+        const value = document.getElementById("countdown-value");
+        const bar = document.getElementById("countdown-bar");
+        const claim = document.getElementById("claim-button");
+        claim.disabled = true;
+        claim.classList.remove("unlocked", "animate-pulseGlow");
+        claim.textContent = "Claim Reward / استلام المكافأة";
+        value.textContent = remaining;
+        bar.style.width = "100%";
+
+        countdownTimer = setInterval(() => {
+          remaining -= 1;
+          value.textContent = remaining;
+          bar.style.width = `${(remaining / totalSeconds) * 100}%`;
+          if (remaining <= 0) {
+            clearInterval(countdownTimer);
+            claim.disabled = false;
+            claim.classList.add("unlocked", "animate-pulseGlow");
+            claim.textContent = `Unlocked - Claim ${activeTaskReward}`;
+          }
+        }, 1000);
+      }
+
+      document.getElementById("claim-button").addEventListener("click", (event) => {
+        if (event.currentTarget.disabled) return;
+        showToast("Reward claimed successfully");
+      });
+
+      document.querySelectorAll("[data-amount]").forEach((button) => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll("[data-amount]").forEach((item) => item.classList.remove("active"));
+          button.classList.add("active");
+          document.getElementById("deposit-amount").value = button.dataset.amount;
+        });
+      });
+
+      const paymentMethods = [
+        {
+          id: "binance-usdt-bsc",
+          title: "Binance USDT",
+          badge: "BSC BEP20",
+          value: "0xf4eca9ac6d3df1aed0d819e16ad9214448ae4cd0",
+          note: "ارسل USDT فقط على شبكة BNB Smart Chain (BEP20)."
+        },
+        {
+          id: "vodafone-cash",
+          title: "Vodafone Cash",
+          badge: "EGP",
+          value: "01501691767",
+          note: "تحويل فودافون كاش على الرقم ثم ارفع صورة الإيصال."
+        },
+        {
+          id: "instapay-phone",
+          title: "InstaPay",
+          badge: "Phone",
+          value: "01115838581",
+          note: "تحويل InstaPay باستخدام رقم الهاتف."
+        },
+        {
+          id: "instapay-handle",
+          title: "InstaPay",
+          badge: "Handle",
+          value: "mohamm3edr3da@instapay",
+          link: "https://ipn.eg/S/mohamm3edr3da/instapay/78yteB",
+          note: "يمكن الدفع عبر الرابط أو عنوان InstaPay."
+        }
+      ];
+
+      function renderPaymentMethods() {
+        document.getElementById("payment-methods").innerHTML = paymentMethods
+          .map(
+            (method) => `
+              <article class="rounded-2xl border border-slateLine bg-frost p-4">
+                <div class="flex items-center justify-between gap-3">
+                  <div>
+                    <strong class="text-base font-black">${escapeHtml(method.title)}</strong>
+                    <p class="mt-1 text-xs text-mutedSilver">${escapeHtml(method.note)}</p>
+                  </div>
+                  <span class="shrink-0 rounded-full border border-emeraldNeon/35 bg-emeraldNeon/10 px-3 py-1 text-xs font-black text-emeraldNeon">${escapeHtml(method.badge)}</span>
+                </div>
+                <div class="mt-3 flex items-center gap-2" dir="ltr">
+                  <code class="min-w-0 flex-1 truncate rounded-xl bg-black/30 px-3 py-3 text-xs text-white">${escapeHtml(method.value)}</code>
+                  <button class="rounded-xl bg-emeraldNeon px-3 py-3 text-xs font-black text-obsidian" type="button" data-copy-value="${escapeHtml(method.value)}">Copy</button>
+                </div>
+                ${
+                  method.link
+                    ? `<a class="mt-3 flex h-11 items-center justify-center rounded-xl border border-vipGold/40 bg-vipGold/10 text-sm font-black text-vipGold" href="${escapeHtml(method.link)}" target="_blank" rel="noopener">Open InstaPay Link</a>`
+                    : ""
+                }
+              </article>
+            `
+          )
+          .join("");
+
+        document.querySelectorAll("[data-copy-value]").forEach((button) => {
+          button.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(button.dataset.copyValue);
+            showToast("Payment detail copied");
+          });
+        });
+      }
+
+      document.getElementById("receipt-file").addEventListener("change", (event) => {
+        document.getElementById("receipt-name").textContent = event.target.files[0]?.name || "PNG, JPG, WEBP";
+      });
+
+      document.querySelectorAll("[data-team-tab]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const level = button.dataset.teamTab;
+          document.querySelectorAll("[data-team-tab]").forEach((tab) => tab.classList.toggle("active", tab === button));
+          document.querySelectorAll("[data-team-panel]").forEach((panel) => {
+            panel.classList.toggle("hidden", panel.dataset.teamPanel !== level);
+            panel.classList.toggle("active", panel.dataset.teamPanel === level);
+          });
+        });
+      });
+
+      renderTaskHall();
+      renderPaymentMethods();
+    </script>
+    <script type="module" src="/src/js/mobile-app.js"></script>
+  </body>
+</html>

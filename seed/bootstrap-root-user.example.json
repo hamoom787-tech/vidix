@@ -1,0 +1,25 @@
+{
+  "users/REPLACE_WITH_FIREBASE_AUTH_UID": {
+    "email": "admin@example.com",
+    "displayName": "Root Admin",
+    "referralCode": "VX-ROOT",
+    "referrerUid": null,
+    "referralPath": [],
+    "vipLevel": "M10",
+    "balances": {
+      "main": 0,
+      "commission": 0,
+      "locked": 0
+    },
+    "income": {
+      "today": 0,
+      "month": 0,
+      "total": 0
+    },
+    "wallets": {},
+    "status": "active",
+    "registeredDayKey": "2026-06-04",
+    "createdAt": "__SERVER_TIMESTAMP__",
+    "updatedAt": "__SERVER_TIMESTAMP__"
+  }
+}

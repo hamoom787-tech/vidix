@@ -1,0 +1,117 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function immutableFinancialFields() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        'balances',
+        'income',
+        'vipLevel',
+        'fundPasswordHash',
+        'wallets',
+        'referrerUid',
+        'referralPath',
+        'createdAt'
+      ]);
+    }
+
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    match /users/{uid} {
+      allow get: if isOwner(uid) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if false;
+      allow update: if isOwner(uid) && immutableFinancialFields();
+      allow delete: if false;
+
+      match /downline_level_A/{memberUid} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if false;
+      }
+
+      match /downline_level_B/{memberUid} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if false;
+      }
+
+      match /downline_level_C/{memberUid} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if false;
+      }
+    }
+
+    match /tasks/{taskId} {
+      allow read: if signedIn() && resource.data.status == 'active';
+      allow write: if isAdmin();
+    }
+
+    match /user_tasks/{userTaskId} {
+      allow get, list: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create, update, delete: if false;
+    }
+
+    match /task_sessions/{sessionId} {
+      allow get, list: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create, update, delete: if false;
+    }
+
+    match /deposits/{depositId} {
+      allow get, list: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create, update, delete: if false;
+    }
+
+    match /withdrawals/{withdrawalId} {
+      allow get, list: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create, update, delete: if false;
+    }
+
+    match /investments/{investmentId} {
+      allow get, list: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create, update, delete: if false;
+    }
+
+    match /subscriptions/{subscriptionId} {
+      allow get, list: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create, update, delete: if false;
+    }
+
+    match /ledger/{ledgerId} {
+      allow get, list: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create, update, delete: if false;
+    }
+
+    match /rank_applications/{applicationId} {
+      allow get, list: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create, update, delete: if false;
+    }
+
+    match /admin_actions/{actionId} {
+      allow get, list: if isAdmin();
+      allow create, update, delete: if false;
+    }
+
+    match /system_settings/{settingId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /public/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

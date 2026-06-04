@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0d0f12" />
+    <title>VidiX Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              obsidian: "#0d0f12",
+              slateCard: "#161b22",
+              slateLine: "#30363d",
+              emeraldNeon: "#00e676",
+              vipGold: "#ffd700",
+              mutedSilver: "#8b949e"
+            },
+            fontFamily: {
+              arabic: ["Cairo", "sans-serif"],
+              latin: ["Inter", "sans-serif"]
+            },
+            boxShadow: {
+              panel: "0 20px 70px rgba(0,0,0,.38)",
+              emerald: "0 0 30px rgba(0,230,118,.32)"
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      body {
+        font-family: "Cairo", sans-serif;
+        background:
+          radial-gradient(circle at 10% -20%, rgba(0, 230, 118, 0.14), transparent 32rem),
+          radial-gradient(circle at 90% 10%, rgba(255, 215, 0, 0.08), transparent 26rem),
+          #0d0f12;
+      }
+
+      .font-money {
+        font-family: "Inter", "Cairo", sans-serif;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .panel {
+        border: 1px solid #30363d;
+        background: linear-gradient(180deg, rgba(22, 27, 34, 0.94), rgba(13, 15, 18, 0.88));
+        box-shadow: 0 20px 70px rgba(0, 0, 0, 0.38);
+        backdrop-filter: blur(18px);
+      }
+
+      .tab.active {
+        color: #0d0f12;
+        background: #00e676;
+      }
+
+      .admin-page {
+        display: none;
+      }
+
+      .admin-page.active {
+        display: block;
+      }
+
+      .field {
+        height: 44px;
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid #30363d;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 0 12px;
+        color: white;
+        outline: none;
+      }
+
+      textarea.field {
+        min-height: 92px;
+        padding-block: 10px;
+      }
+
+      .field:focus {
+        border-color: rgba(0, 230, 118, 0.72);
+        box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.12);
+      }
+
+      .button {
+        min-height: 42px;
+        border-radius: 14px;
+        padding: 0 14px;
+        font-weight: 900;
+      }
+
+      .button-primary {
+        background: #00e676;
+        color: #0d0f12;
+      }
+
+      .button-ghost {
+        border: 1px solid #30363d;
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+      }
+
+      .table-row {
+        display: grid;
+        gap: 10px;
+        align-items: center;
+        border: 1px solid #30363d;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.04);
+        padding: 12px;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen text-white">
+    <main class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-4 lg:px-6">
+      <header class="panel sticky top-3 z-40 rounded-3xl p-4">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p class="text-xs font-black uppercase tracking-[0.22em] text-emeraldNeon">VidiX Control Center</p>
+            <h1 class="font-latin text-3xl font-black">Admin Panel</h1>
+            <p class="mt-1 text-sm text-mutedSilver">إدارة المستخدمين، الشحنات، السحوبات، المهام، VIP، والاستثمارات.</p>
+          </div>
+
+          <form class="grid gap-2 md:grid-cols-[1fr_1fr_auto_auto]" id="admin-login-form">
+            <input class="field" id="admin-email" type="email" placeholder="admin@example.com" />
+            <input class="field" id="admin-password" type="password" placeholder="Password" />
+            <button class="button button-primary" type="submit">Login</button>
+            <button class="button button-ghost" id="admin-logout" type="button">Logout</button>
+          </form>
+        </div>
+
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <span class="rounded-full border border-slateLine bg-white/5 px-3 py-1 text-xs font-black text-mutedSilver" id="mode-pill">Local mode</span>
+          <span class="rounded-full border border-slateLine bg-white/5 px-3 py-1 text-xs font-black text-mutedSilver" id="admin-user-pill">Not signed in</span>
+          <a class="rounded-full border border-slateLine bg-white/5 px-3 py-1 text-xs font-black text-white" href="/">Open App</a>
+        </div>
+      </header>
+
+      <nav class="mt-4 flex gap-2 overflow-x-auto pb-2">
+        <button class="tab active button button-ghost whitespace-nowrap" data-tab="dashboard" type="button">Dashboard</button>
+        <button class="tab button button-ghost whitespace-nowrap" data-tab="users" type="button">Users</button>
+        <button class="tab button button-ghost whitespace-nowrap" data-tab="deposits" type="button">Deposits</button>
+        <button class="tab button button-ghost whitespace-nowrap" data-tab="withdrawals" type="button">Withdrawals</button>
+        <button class="tab button button-ghost whitespace-nowrap" data-tab="tasks" type="button">Tasks</button>
+        <button class="tab button button-ghost whitespace-nowrap" data-tab="vip" type="button">VIP</button>
+        <button class="tab button button-ghost whitespace-nowrap" data-tab="investments" type="button">Investments</button>
+      </nav>
+
+      <section class="admin-page active mt-4" data-page="dashboard">
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4" id="dashboard-cards"></div>
+      </section>
+
+      <section class="admin-page mt-4" data-page="users">
+        <div class="grid gap-4 lg:grid-cols-[360px_1fr]">
+          <form class="panel rounded-3xl p-4" id="user-action-form">
+            <h2 class="text-xl font-black">User Actions</h2>
+            <div class="mt-4 grid gap-3">
+              <input class="field" name="uid" placeholder="User UID" required />
+              <select class="field" name="action">
+                <option value="adjustBalance">Adjust Balance</option>
+                <option value="setVip">Set VIP</option>
+                <option value="setStatus">Set Status</option>
+              </select>
+              <select class="field" name="wallet">
+                <option value="main">Main wallet</option>
+                <option value="commission">Commission wallet</option>
+                <option value="locked">Locked wallet</option>
+              </select>
+              <input class="field" name="amount" type="number" step="0.01" placeholder="Amount delta, e.g. 25 or -10" />
+              <select class="field" name="vipLevel">
+                <option>M0</option><option>M1</option><option>M2</option><option>M3</option><option>M4</option>
+                <option>M5</option><option>M6</option><option>M7</option><option>M8</option><option>M9</option><option>M10</option>
+              </select>
+              <select class="field" name="status">
+                <option value="active">active</option>
+                <option value="suspended">suspended</option>
+                <option value="review">review</option>
+              </select>
+              <input class="field" name="reason" placeholder="Reason / note" />
+              <button class="button button-primary" type="submit">Apply User Action</button>
+            </div>
+          </form>
+          <section class="panel rounded-3xl p-4">
+            <div class="flex items-center justify-between gap-3">
+              <h2 class="text-xl font-black">Users</h2>
+              <button class="button button-ghost" data-refresh="users" type="button">Refresh</button>
+            </div>
+            <div class="mt-4 grid gap-3" id="users-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="admin-page mt-4" data-page="deposits">
+        <section class="panel rounded-3xl p-4">
+          <div class="flex items-center justify-between gap-3">
+            <h2 class="text-xl font-black">Deposit Requests</h2>
+            <button class="button button-ghost" data-refresh="deposits" type="button">Refresh</button>
+          </div>
+          <div class="mt-4 grid gap-3" id="deposits-list"></div>
+        </section>
+      </section>
+
+      <section class="admin-page mt-4" data-page="withdrawals">
+        <section class="panel rounded-3xl p-4">
+          <div class="flex items-center justify-between gap-3">
+            <h2 class="text-xl font-black">Withdrawal Requests</h2>
+            <button class="button button-ghost" data-refresh="withdrawals" type="button">Refresh</button>
+          </div>
+          <div class="mt-4 grid gap-3" id="withdrawals-list"></div>
+        </section>
+      </section>
+
+      <section class="admin-page mt-4" data-page="tasks">
+        <div class="grid gap-4 lg:grid-cols-[420px_1fr]">
+          <form class="panel rounded-3xl p-4" id="task-form">
+            <h2 class="text-xl font-black">Task Management</h2>
+            <div class="mt-4 grid gap-3">
+              <input class="field" name="id" placeholder="Task ID, optional for new" />
+              <input class="field" name="title" placeholder="Task title" required />
+              <input class="field" name="category" placeholder="Category" value="Movie Trailer" />
+              <input class="field" name="posterUrl" placeholder="Poster URL" value="/assets/images/tasks/watch-earn-phone.png" />
+              <input class="field" name="videoUrl" placeholder="Video URL / embed URL" value="https://www.youtube.com/embed/ysz5S6PUM-U" />
+              <div class="grid grid-cols-3 gap-2">
+                <input class="field" name="reward" type="number" step="0.01" placeholder="Reward" value="1" />
+                <input class="field" name="durationSeconds" type="number" placeholder="Seconds" value="12" />
+                <select class="field" name="vipRequired">
+                  <option>M0</option><option selected>M1</option><option>M2</option><option>M3</option><option>M4</option><option>M5</option>
+                </select>
+              </div>
+              <select class="field" name="status">
+                <option value="active">active</option>
+                <option value="draft">draft</option>
+                <option value="archived">archived</option>
+              </select>
+              <button class="button button-primary" type="submit">Save Task</button>
+            </div>
+          </form>
+          <section class="panel rounded-3xl p-4">
+            <div class="flex items-center justify-between gap-3">
+              <h2 class="text-xl font-black">Tasks</h2>
+              <button class="button button-ghost" data-refresh="tasks" type="button">Refresh</button>
+            </div>
+            <div class="mt-4 grid gap-3" id="tasks-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="admin-page mt-4" data-page="vip">
+        <div class="grid gap-4 lg:grid-cols-[360px_1fr]">
+          <form class="panel rounded-3xl p-4" id="vip-form">
+            <h2 class="text-xl font-black">VIP Level</h2>
+            <div class="mt-4 grid gap-3">
+              <select class="field" name="id">
+                <option>M0</option><option>M1</option><option>M2</option><option>M3</option><option>M4</option>
+                <option>M5</option><option>M6</option><option>M7</option><option>M8</option><option>M9</option><option>M10</option>
+              </select>
+              <input class="field" name="price" type="number" step="0.01" placeholder="Activation price" />
+              <input class="field" name="dailyTasks" type="number" placeholder="Daily tasks" />
+              <input class="field" name="reward" type="number" step="0.01" placeholder="Reward per task" />
+              <button class="button button-primary" type="submit">Save VIP Level</button>
+            </div>
+          </form>
+          <section class="panel rounded-3xl p-4">
+            <h2 class="text-xl font-black">VIP Levels</h2>
+            <div class="mt-4 grid gap-3" id="vip-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="admin-page mt-4" data-page="investments">
+        <div class="grid gap-4 lg:grid-cols-[420px_1fr]">
+          <form class="panel rounded-3xl p-4" id="plan-form">
+            <h2 class="text-xl font-black">Investment Plans</h2>
+            <div class="mt-4 grid gap-3">
+              <input class="field" name="id" placeholder="Plan ID" required />
+              <input class="field" name="title" placeholder="Plan title" required />
+              <div class="grid grid-cols-3 gap-2">
+                <input class="field" name="periodDays" type="number" placeholder="Days" />
+                <input class="field" name="dailyRate" type="number" step="0.01" placeholder="Rate %" />
+                <input class="field" name="minAmount" type="number" step="0.01" placeholder="Min" />
+              </div>
+              <select class="field" name="status">
+                <option value="active">active</option>
+                <option value="draft">draft</option>
+                <option value="archived">archived</option>
+              </select>
+              <button class="button button-primary" type="submit">Save Plan</button>
+            </div>
+          </form>
+          <section class="panel rounded-3xl p-4">
+            <div class="flex items-center justify-between gap-3">
+              <h2 class="text-xl font-black">Plans / Active Investments</h2>
+              <button class="button button-ghost" data-refresh="investments" type="button">Refresh</button>
+            </div>
+            <div class="mt-4 grid gap-3" id="plans-list"></div>
+            <div class="mt-5 grid gap-3" id="investments-list"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="fixed bottom-5 left-1/2 z-50 hidden w-[min(420px,calc(100vw-32px))] -translate-x-1/2 rounded-2xl border border-slateLine bg-slateCard px-4 py-3 text-center text-sm font-bold shadow-panel"></div>
+    <script type="module" src="/src/js/admin-console.js"></script>
+  </body>
+</html>

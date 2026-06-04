@@ -1,0 +1,83 @@
+{
+  "system_settings/vip_levels": {
+    "levels": [
+      { "id": "M0", "price": 0, "dailyTasks": 1, "reward": 0.25 },
+      { "id": "M1", "price": 20, "dailyTasks": 2, "reward": 0.55 },
+      { "id": "M2", "price": 125, "dailyTasks": 5, "reward": 1 },
+      { "id": "M3", "price": 250, "dailyTasks": 8, "reward": 1.35 },
+      { "id": "M4", "price": 700, "dailyTasks": 14, "reward": 2.2 },
+      { "id": "M5", "price": 2300, "dailyTasks": 22, "reward": 4 },
+      { "id": "M6", "price": 5000, "dailyTasks": 32, "reward": 6.5 },
+      { "id": "M7", "price": 9000, "dailyTasks": 44, "reward": 8.75 },
+      { "id": "M8", "price": 15000, "dailyTasks": 58, "reward": 11 },
+      { "id": "M9", "price": 25000, "dailyTasks": 72, "reward": 15 },
+      { "id": "M10", "price": 50000, "dailyTasks": 100, "reward": 21 }
+    ]
+  },
+  "system_settings/referrals": {
+    "levels": [
+      { "level": "A", "rate": 0.04 },
+      { "level": "B", "rate": 0.02 },
+      { "level": "C", "rate": 0.01 }
+    ]
+  },
+  "system_settings/investment_plans": {
+    "plans": [
+      { "id": "doomsday-180", "title": "Avengers: Doomsday Plan", "periodDays": 180, "dailyRate": 2, "minAmount": 100, "status": "active" },
+      { "id": "sapphire-90", "title": "Sapphire Growth Plan", "periodDays": 90, "dailyRate": 1.2, "minAmount": 50, "status": "active" },
+      { "id": "emerald-365", "title": "Emerald Reserve", "periodDays": 365, "dailyRate": 2.5, "minAmount": 500, "status": "active" }
+    ]
+  },
+  "system_settings/wallets": {
+    "fx": {
+      "usdtEgpRate": 50
+    },
+    "depositNetworks": [
+      {
+        "id": "BINANCE_USDT_BSC",
+        "label": "Binance USDT - BNB Smart Chain (BEP20)",
+        "wallet": "0xf4eca9ac6d3df1aed0d819e16ad9214448ae4cd0",
+        "minimumDeposit": 20,
+        "status": "active"
+      },
+      {
+        "id": "VODAFONE_CASH",
+        "label": "Vodafone Cash",
+        "wallet": "01501691767",
+        "minimumDeposit": 100,
+        "currency": "EGP",
+        "status": "active"
+      },
+      {
+        "id": "INSTAPAY_PHONE",
+        "label": "InstaPay Phone",
+        "wallet": "01115838581",
+        "minimumDeposit": 100,
+        "currency": "EGP",
+        "status": "active"
+      },
+      {
+        "id": "INSTAPAY_HANDLE",
+        "label": "InstaPay Handle",
+        "wallet": "mohamm3edr3da@instapay",
+        "paymentLink": "https://ipn.eg/S/mohamm3edr3da/instapay/78yteB",
+        "minimumDeposit": 100,
+        "currency": "EGP",
+        "status": "active"
+      }
+    ],
+    "withdrawal": {
+      "minimum": 10,
+      "feeRate": 0.02,
+      "fixedFee": 0,
+      "allowedWallets": ["main", "commission"]
+    }
+  },
+  "public/news": {
+    "items": [
+      "VidiX admin review is required for all deposits.",
+      "Never share your fund password with support or team members.",
+      "VIP task limits are refreshed daily."
+    ]
+  }
+}
