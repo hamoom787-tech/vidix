@@ -1,34 +1,29 @@
-import { initializeApp } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
-
 const args = parseArgs(process.argv.slice(2));
-const projectId =
-  args.project ||
-  process.env.GCLOUD_PROJECT ||
-  process.env.FIREBASE_PROJECT_ID ||
-  process.env.VITE_FIREBASE_PROJECT_ID ||
-  "vidix-local";
+const workerUrl = String(args.api || process.env.VIDIX_WORKER_API_URL || process.env.VITE_WORKER_API_URL || "").replace(/\/+$/, "");
+const idToken = args.token || process.env.VIDIX_FIREBASE_ID_TOKEN || process.env.FIREBASE_ID_TOKEN;
+const bootstrapSecret = args.bootstrapSecret || process.env.VIDIX_BOOTSTRAP_SECRET || process.env.BOOTSTRAP_SECRET;
 
-if (!args.uid && !args.email) {
-  console.error("Usage: npm run admin:claim -- --uid USER_UID");
-  console.error("   or: npm run admin:claim -- --email admin@example.com");
+if (!workerUrl || !idToken || !bootstrapSecret) {
+  console.error("This project now uses Worker admin roles instead of Firebase custom claims.");
+  console.error("Usage: node tools/set-admin-claim.js --api https://vidix-api.example.workers.dev --token FIREBASE_ID_TOKEN --bootstrapSecret SECRET");
+  console.error("Or set VIDIX_WORKER_API_URL, VIDIX_FIREBASE_ID_TOKEN, and VIDIX_BOOTSTRAP_SECRET.");
   process.exit(1);
 }
 
-initializeApp({ projectId });
-
-const auth = getAuth();
-const user = args.uid ? await auth.getUser(args.uid) : await auth.getUserByEmail(args.email);
-const existingClaims = user.customClaims || {};
-const admin = args.remove ? false : true;
-
-await auth.setCustomUserClaims(user.uid, {
-  ...existingClaims,
-  admin
+const response = await fetch(`${workerUrl}/admin/bootstrap-root`, {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${idToken}`,
+    "x-bootstrap-secret": bootstrapSecret
+  }
 });
+const payload = await response.json().catch(() => ({}));
+if (!response.ok) {
+  console.error(payload?.error?.message || `Admin bootstrap failed with ${response.status}.`);
+  process.exit(1);
+}
 
-console.log(`Updated admin claim for ${user.uid} (${user.email || "no email"}): admin=${admin}`);
-console.log("The user must sign out and sign in again to receive the updated token.");
+console.log(`Bootstrapped Worker admin role for uid ${payload.data?.uid}. Referral code: ${payload.data?.referralCode}.`);
 
 function parseArgs(argv) {
   const parsed = {};

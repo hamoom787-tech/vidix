@@ -7,13 +7,15 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "emulators": "npx firebase-tools emulators:start",
+    "emulators": "npx firebase-tools emulators:start --only auth,firestore,hosting",
     "seed": "node tools/seed-firestore.js",
-    "admin:claim": "node tools/set-admin-claim.js",
+    "admin:bootstrap": "node tools/set-admin-claim.js",
     "test:rules": "vitest run tests/firestore.rules.test.js",
     "test:rules:ci": "npx firebase-tools emulators:exec --only firestore \"vitest run tests/firestore.rules.test.js\"",
-    "deploy": "npm run build && npx firebase-tools deploy",
-    "lint:rules": "npx firebase-tools emulators:exec --only firestore \"echo rules-ok\""
+    "deploy": "npm run build && npx firebase-tools deploy --only hosting,firestore:rules,firestore:indexes",
+    "lint:rules": "npx firebase-tools emulators:exec --only firestore \"echo rules-ok\"",
+    "worker:dev": "npx wrangler dev",
+    "worker:deploy": "npx wrangler deploy"
   },
   "dependencies": {
     "firebase": "^12.14.0",
@@ -22,7 +24,7 @@
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^5.0.1",
-    "firebase-admin": "^13.9.0",
-    "vitest": "^4.0.15"
+    "vitest": "^4.0.15",
+    "wrangler": "^4.98.0"
   }
 }

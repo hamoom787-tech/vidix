@@ -18,27 +18,26 @@ import {
   query,
   where
 } from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { httpsCallable } from "firebase/functions";
-import { auth, db, firebaseApp, functions, storage } from "./firebase-config";
+import { auth, db, firebaseApp } from "./firebase-config";
+import { apiRequest } from "./api/backend-client";
 import { assertCryptoWallet, assertFundPassword, assertPositiveAmount, assertReferralCode, assertTxId } from "./utils/validators";
 import { todayKey } from "./utils/formatters";
 
-export { auth, db, firebaseApp, functions, storage };
+export { auth, db, firebaseApp };
 
-const callable = (name) => httpsCallable(functions, name);
+const workerCall = (path) => async (payload = {}) => ({ data: await apiRequest(path, { body: payload }) });
 
 export const api = {
-  completeRegistration: callable("completeRegistration"),
-  setFundPassword: callable("setFundPassword"),
-  bindWallet: callable("bindWallet"),
-  createDepositRequest: callable("createDepositRequest"),
-  requestWithdrawal: callable("requestWithdrawal"),
-  startTaskWatch: callable("startTaskWatch"),
-  completeTask: callable("completeTask"),
-  upgradeVip: callable("upgradeVip"),
-  joinInvestment: callable("joinInvestment"),
-  applyForRank: callable("applyForRank")
+  completeRegistration: workerCall("/auth/complete-registration"),
+  setFundPassword: workerCall("/auth/set-fund-password"),
+  bindWallet: workerCall("/wallet/bind"),
+  createDepositRequest: workerCall("/deposits"),
+  requestWithdrawal: workerCall("/withdrawals"),
+  startTaskWatch: workerCall("/tasks/start"),
+  completeTask: workerCall("/tasks/complete"),
+  upgradeVip: workerCall("/vip/upgrade"),
+  joinInvestment: workerCall("/investments"),
+  applyForRank: workerCall("/ranks/apply")
 };
 
 export function watchAuth(callback) {
@@ -53,10 +52,9 @@ export async function signUpWithEmail({ email, password, referralCode, fundPassw
   try {
     await api.completeRegistration({
       referralCode: invitationCode,
+      fundPassword: secureFundPassword,
       authProvider: "email"
     });
-
-    await api.setFundPassword({ fundPassword: secureFundPassword });
     return credential.user;
   } catch (error) {
     await deleteUser(credential.user).catch(() => {});
@@ -99,9 +97,9 @@ export async function confirmPhoneCode({ confirmationResult, otpCode, mode, refe
     const secureFundPassword = assertFundPassword(fundPassword);
     await api.completeRegistration({
       referralCode: invitationCode,
+      fundPassword: secureFundPassword,
       authProvider: "phone"
     });
-    await api.setFundPassword({ fundPassword: secureFundPassword });
   }
 
   return credential.user;
@@ -180,28 +178,22 @@ export async function getTaskStatus(status = "all") {
 }
 
 export async function uploadDepositReceipt(file) {
-  if (!auth.currentUser) throw new Error("You must be signed in to upload a receipt.");
-  if (!file) throw new Error("Receipt screenshot is required.");
-
-  const cleanName = file.name.replace(/[^\w.-]/g, "_");
-  const storageRef = ref(storage, `receipts/${auth.currentUser.uid}/${Date.now()}-${cleanName}`);
-  await uploadBytes(storageRef, file, {
-    contentType: file.type || "application/octet-stream",
-    customMetadata: { uid: auth.currentUser.uid }
-  });
-  return getDownloadURL(storageRef);
+  if (!file) throw new Error("Payment proof reference is required.");
+  throw new Error("Firebase Storage is disabled on the free plan. Paste a receipt URL or payment reference instead.");
 }
 
-export async function submitDeposit({ network, paymentMethod, amount, txId, receiptFile }) {
+export async function submitDeposit({ network, paymentMethod, amount, txId, receiptReference }) {
   const value = assertPositiveAmount(amount, 20);
   const cleanTxId = assertTxId(txId);
-  const receiptUrl = await uploadDepositReceipt(receiptFile);
+  const proofReference = String(receiptReference || cleanTxId || "").trim();
+  if (proofReference.length < 6) throw new Error("Payment proof reference is required.");
   const response = await api.createDepositRequest({
     network: paymentMethod || network,
     paymentMethod: paymentMethod || network,
     amount: value,
     txId: cleanTxId,
-    receiptUrl
+    receiptUrl: proofReference,
+    receiptReference: proofReference
   });
   return response.data;
 }

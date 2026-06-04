@@ -1,6 +1,6 @@
 # VidiX Platform
 
-Premium mobile-first video task earning platform with a Firebase-only Admin Panel, callable backend, Firestore rules, seed scripts, and rules tests.
+Premium mobile-first video task earning platform with Firebase Auth/Firestore, a Cloudflare Worker API backend, Admin Panel, Firestore rules, seed helpers, and rules tests.
 
 ## Local URLs
 
@@ -11,26 +11,24 @@ Premium mobile-first video task earning platform with a Firebase-only Admin Pane
 ## Stack
 
 - Frontend: Vite, HTML5, Tailwind CDN mobile shell, Firebase Web SDK.
-- Backend: Firebase Auth, Firestore, Storage, Cloud Functions v2.
-- Security: client cannot write balances, VIP tier, deposits, withdrawals, ledger, or completed tasks. Money-moving operations go through callable Cloud Functions.
+- Backend: Firebase Auth + Firestore on the free Firebase plan, with Cloudflare Workers handling secure server-side money/task/admin actions.
+- Security: client cannot write balances, VIP tier, deposits, withdrawals, ledger, or completed tasks. Money-moving operations go through the Cloudflare Worker API.
 
 ## Key Files
 
 ```text
 index.html                         User mobile UI
 admin.html                         Admin Panel UI
-src/js/mobile-app.js               User app Firebase controller
-src/js/admin-console.js            Admin Panel Firebase controller
-functions/index.js                 Callable backend and admin actions
+src/js/mobile-app.js               User app controller
+src/js/admin-console.js            Admin Panel controller
+worker/src/index.js                Cloudflare Worker backend API
+wrangler.jsonc                     Cloudflare Worker deployment config
 firestore.rules                    Firestore security rules
-storage.rules                      Storage security rules
 tests/firestore.rules.test.js      Rules test suite
-tools/seed-firestore.js            Firestore seed/import script
-tools/set-admin-claim.js           Admin custom-claim script
 seed/system-settings.json          VIP/referral/wallet/investment settings
 seed/tasks.json                    Default task catalog
 .env                               Local emulator-safe Firebase config
-firebase.json                      Hosting, Functions, Firestore, Storage config
+firebase.json                      Hosting and Firestore config
 vite.config.js                     Multi-page build: app + admin
 ```
 
@@ -38,42 +36,44 @@ vite.config.js                     Multi-page build: app + admin
 
 ```bash
 npm install
-cd functions && npm install && cd ..
 npm run dev
+npm run worker:dev
 npm run build
 npm run emulators
+npm run admin:bootstrap
 npm run seed
 npm run test:rules
 npm run deploy
+npm run worker:deploy
 ```
 
-## Admin Claim
+## Cloudflare Worker Secrets
 
-For the Auth emulator or a real Firebase project:
+Create a Firebase/GCP service account key, then set the Worker secrets:
 
 ```bash
-npm run admin:claim -- --uid USER_UID
-npm run admin:claim -- --email admin@example.com
-npm run admin:claim -- --uid USER_UID --remove
+npx wrangler secret put GOOGLE_CLIENT_EMAIL
+npx wrangler secret put GOOGLE_PRIVATE_KEY
+npx wrangler secret put BOOTSTRAP_SECRET
 ```
 
-For a real Firebase project, make sure Admin SDK credentials are available through `GOOGLE_APPLICATION_CREDENTIALS` or your normal Firebase/Google ADC setup.
+Copy `.dev.vars.example` to `.dev.vars` for local Worker development.
 
-## Seed Firestore
+## First Admin / Seed
 
-Default seed:
+After creating and signing into the first Firebase Auth admin account, call the Worker bootstrap endpoint with the Firebase ID token and `x-bootstrap-secret`. Then seed defaults:
 
 ```bash
+curl -X POST "$VITE_WORKER_API_URL/admin/bootstrap-root" -H "Authorization: Bearer FIREBASE_ID_TOKEN" -H "x-bootstrap-secret: BOOTSTRAP_SECRET"
+curl -X POST "$VITE_WORKER_API_URL/admin/seed-defaults" -H "Authorization: Bearer FIREBASE_ID_TOKEN" -H "x-bootstrap-secret: BOOTSTRAP_SECRET"
+```
+
+The npm helpers use the same API. Set `VIDIX_WORKER_API_URL`, `VIDIX_FIREBASE_ID_TOKEN`, and `VIDIX_BOOTSTRAP_SECRET`, then run:
+
+```bash
+npm run admin:bootstrap
 npm run seed
 ```
-
-Specific seed file:
-
-```bash
-npm run seed -- --file seed/tasks.json
-```
-
-The seed script writes document paths from JSON keys such as `tasks/task-id` and `system_settings/vip_levels`.
 
 ## Firestore Collections
 
@@ -100,9 +100,10 @@ public/news
 ## Production Checklist
 
 - Replace `.env` local values with your Firebase Web Config.
+- Set `VITE_WORKER_API_URL` to the deployed Worker URL.
 - Update `.firebaserc` with the real Firebase project id.
-- Create the first admin Auth user and set `admin: true`.
-- Seed `system_settings` and `tasks`.
-- Deploy Firestore rules, Storage rules, indexes, Functions, and Hosting.
+- Create the first admin Auth user, then run Worker bootstrap.
+- Seed `system_settings` and `tasks` through `/admin/seed-defaults`.
+- Deploy Firestore rules, indexes, Hosting, and Cloudflare Worker.
 - Replace local/static assets with licensed posters and final VidiX brand files.
 - Review referral/investment wording legally before public launch.

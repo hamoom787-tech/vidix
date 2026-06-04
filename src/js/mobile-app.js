@@ -1,7 +1,7 @@
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, doc, getDoc, getDocs, limit, onSnapshot, orderBy, query, where } from "firebase/firestore";
-import { httpsCallable } from "firebase/functions";
-import { auth, db, functions } from "./firebase-config";
+import { auth, db } from "./firebase-config";
+import { apiRequest } from "./api/backend-client";
 import { loginUser, registerNewUser } from "./firebase-auth";
 import { submitDepositRequest, submitWithdrawalRequest } from "./wallet-firestore";
 import { escapeHtml, formatMoney, showToast, withLoading } from "./ui/async-ui";
@@ -19,11 +19,11 @@ const state = {
   countdownTimer: null
 };
 
-const call = (name) => httpsCallable(functions, name);
-const startTaskWatch = call("startTaskWatch");
-const completeTask = call("completeTask");
-const upgradeVip = call("upgradeVip");
-const joinInvestment = call("joinInvestment");
+const workerCall = (path) => async (payload) => ({ data: await apiRequest(path, { body: payload }) });
+const startTaskWatch = workerCall("/tasks/start");
+const completeTask = workerCall("/tasks/complete");
+const upgradeVip = workerCall("/vip/upgrade");
+const joinInvestment = workerCall("/investments");
 
 bootstrap();
 
@@ -46,7 +46,8 @@ function bootstrap() {
     if (!user) {
       renderProfile(null);
       showScreen("auth");
-      await loadTasks();
+      state.tasks = [];
+      renderTasks();
       return;
     }
 
@@ -108,18 +109,16 @@ function bindDeposit() {
   document.querySelector("#deposit-amount")?.addEventListener("input", updateDepositFxNote);
 
   document.querySelector("#deposit-submit")?.addEventListener("click", async (event) => {
-    const receiptFile = document.querySelector("#receipt-file")?.files?.[0];
     await withLoading(event.currentTarget, async () => {
       requireSignedIn();
       const result = await submitDepositRequest({
         paymentMethod: state.selectedPaymentMethod,
         amount: Number(document.querySelector("#deposit-amount")?.value || 0),
         txId: document.querySelector("#deposit-txid")?.value.trim(),
-        receiptFile
+        receiptReference: document.querySelector("#receipt-reference")?.value.trim()
       });
       document.querySelector("#deposit-txid").value = "";
-      document.querySelector("#receipt-file").value = "";
-      document.querySelector("#receipt-name").textContent = "PNG, JPG, WEBP";
+      document.querySelector("#receipt-reference").value = "";
       showToast(`Deposit submitted: ${result.depositId}`, "success");
     });
   });
@@ -199,8 +198,7 @@ function bindClaimButton() {
 }
 
 async function loadWalletSettings() {
-  const snapshot = await getDoc(doc(db, "system_settings", "wallets"));
-  state.walletSettings = snapshot.data() || {
+  const fallback = {
     fx: { usdtEgpRate: Number(import.meta.env.VITE_DEFAULT_USDT_EGP_RATE || 50) },
     depositNetworks: [
       {
@@ -213,6 +211,13 @@ async function loadWalletSettings() {
     ],
     withdrawal: { minimum: 10, feeRate: 0.02, fixedFee: 0, allowedWallets: ["main", "commission"] }
   };
+
+  try {
+    state.walletSettings = await apiRequest("/settings/wallets", { method: "GET", authRequired: false });
+  } catch (apiError) {
+    const snapshot = auth.currentUser ? await getDoc(doc(db, "system_settings", "wallets")).catch(() => null) : null;
+    state.walletSettings = snapshot?.data?.() || fallback;
+  }
 }
 
 async function loadTasks() {

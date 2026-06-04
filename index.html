@@ -476,10 +476,9 @@
             TxID / Hash
             <input id="deposit-txid" class="field-input" type="text" placeholder="TRC20 transaction hash" />
           </label>
-          <label class="mt-4 flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slateLine bg-frost p-4 text-center">
-            <span class="text-sm font-black text-white">Upload Receipt Image</span>
-            <span id="receipt-name" class="mt-1 text-xs text-mutedSilver">PNG, JPG, WEBP</span>
-            <input id="receipt-file" class="hidden" type="file" accept="image/*" />
+          <label class="field-label mt-4">
+            Payment Proof Reference
+            <input id="receipt-reference" class="field-input" type="text" placeholder="Receipt URL, Vodafone reference, or InstaPay confirmation" />
           </label>
           <button id="deposit-submit" class="mt-5 h-14 w-full rounded-2xl bg-emeraldNeon font-black text-obsidian shadow-emerald" type="button">Submit Deposit</button>
         </section>
@@ -885,7 +884,7 @@
         });
       }
 
-      document.getElementById("receipt-file").addEventListener("change", (event) => {
+      document.getElementById("receipt-file")?.addEventListener("change", (event) => {
         document.getElementById("receipt-name").textContent = event.target.files[0]?.name || "PNG, JPG, WEBP";
       });
 

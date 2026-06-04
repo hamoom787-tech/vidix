@@ -1,33 +1,27 @@
-import { collection, getDocs, limit, orderBy, query, where } from "firebase/firestore";
-import { httpsCallable } from "firebase/functions";
-import { db, functions } from "./firebase-config";
+import { apiRequest } from "./api/backend-client";
 
 export async function listPendingDeposits() {
-  const snapshot = await getDocs(
-    query(collection(db, "deposits"), where("status", "==", "pending"), orderBy("createdAt", "desc"), limit(200))
-  );
-  return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+  const data = await apiRequest("/admin/deposits", { method: "GET" });
+  return (data.deposits || []).filter((item) => item.status === "pending");
 }
 
 export async function listPendingWithdrawals() {
-  const snapshot = await getDocs(
-    query(collection(db, "withdrawals"), where("status", "==", "pending"), orderBy("createdAt", "desc"), limit(200))
-  );
-  return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+  const data = await apiRequest("/admin/withdrawals", { method: "GET" });
+  return (data.withdrawals || []).filter((item) => item.status === "pending");
 }
 
 export async function approveDepositRequest(depositId, approvedAmount) {
-  return (await httpsCallable(functions, "approveDeposit")({ depositId, approvedAmount })).data;
+  return apiRequest(`/admin/deposits/${encodeURIComponent(depositId)}/approve`, { body: { approvedAmount } });
 }
 
 export async function rejectDepositRequest(depositId, reason = "Rejected by admin") {
-  return (await httpsCallable(functions, "rejectDeposit")({ depositId, reason })).data;
+  return apiRequest(`/admin/deposits/${encodeURIComponent(depositId)}/reject`, { body: { reason } });
 }
 
 export async function settleWithdrawalRequest(withdrawalId, status, payoutTxId = "") {
-  return (await httpsCallable(functions, "settleWithdrawal")({ withdrawalId, status, payoutTxId })).data;
+  return apiRequest(`/admin/withdrawals/${encodeURIComponent(withdrawalId)}/settle`, { body: { status, payoutTxId } });
 }
 
 export async function getAdminDashboardStats() {
-  return (await httpsCallable(functions, "adminDashboardStats")()).data;
+  return apiRequest("/admin/dashboard", { method: "GET" });
 }

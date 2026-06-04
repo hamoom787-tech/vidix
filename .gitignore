@@ -2,7 +2,9 @@ node_modules/
 functions/node_modules/
 dist/
 .env
+.dev.vars
 .firebase/
+.wrangler-local/
 firebase-debug.log
 firestore-debug.log
 ui-debug.log

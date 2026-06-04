@@ -1,7 +1,6 @@
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { collection, doc, getDoc, getDocs, limit, orderBy, query } from "firebase/firestore";
-import { httpsCallable } from "firebase/functions";
-import { auth, db, functions } from "./firebase-config";
+import { auth } from "./firebase-config";
+import { apiRequest } from "./api/backend-client";
 
 const state = {
   user: null,
@@ -26,7 +25,7 @@ const els = {
 bootstrap();
 
 function bootstrap() {
-  els.modePill.textContent = "Firebase production mode";
+  els.modePill.textContent = "Cloudflare Worker API";
   bindTabs();
   bindForms();
   bindRefreshButtons();
@@ -42,11 +41,11 @@ function bootstrap() {
       return;
     }
 
-    const token = await user.getIdTokenResult(true);
-    state.isAdmin = token.claims.admin === true;
-    els.modePill.textContent = state.isAdmin ? "Admin claim verified" : "Signed in without admin claim";
+    const adminSession = await apiRequest("/admin/me", { method: "GET" }).catch(() => ({ isAdmin: false }));
+    state.isAdmin = adminSession.isAdmin === true;
+    els.modePill.textContent = state.isAdmin ? "Worker admin verified" : "Signed in without admin role";
     if (!state.isAdmin) {
-      showToast("This account does not have admin claim.", "error");
+      showToast("This account does not have admin role.", "error");
       clearRemoteData();
       renderAll();
       return;
@@ -188,32 +187,29 @@ async function refreshRemoteData(scope = "all") {
   if (!state.user || !state.isAdmin) return;
   const loaders = {
     users: async () => {
-      const snapshot = await getDocs(query(collection(db, "users"), limit(500)));
-      state.users = snapshot.docs.map(toRecord);
+      const data = await apiRequest("/admin/users", { method: "GET" });
+      state.users = data.users || [];
     },
     deposits: async () => {
-      const snapshot = await getDocs(query(collection(db, "deposits"), orderBy("createdAt", "desc"), limit(500)));
-      state.deposits = snapshot.docs.map(toRecord);
+      const data = await apiRequest("/admin/deposits", { method: "GET" });
+      state.deposits = data.deposits || [];
     },
     withdrawals: async () => {
-      const snapshot = await getDocs(query(collection(db, "withdrawals"), orderBy("createdAt", "desc"), limit(500)));
-      state.withdrawals = snapshot.docs.map(toRecord);
+      const data = await apiRequest("/admin/withdrawals", { method: "GET" });
+      state.withdrawals = data.withdrawals || [];
     },
     tasks: async () => {
-      const snapshot = await getDocs(query(collection(db, "tasks"), orderBy("sortOrder", "asc"), limit(500)));
-      state.tasks = snapshot.docs.map(toRecord);
+      const data = await apiRequest("/admin/tasks", { method: "GET" });
+      state.tasks = data.tasks || [];
     },
     vip: async () => {
-      const snapshot = await getDoc(doc(db, "system_settings", "vip_levels"));
-      state.vipLevels = snapshot.data()?.levels || [];
+      const data = await apiRequest("/admin/vip-levels", { method: "GET" });
+      state.vipLevels = data.levels || [];
     },
     investments: async () => {
-      const [plansSnap, investmentsSnap] = await Promise.all([
-        getDoc(doc(db, "system_settings", "investment_plans")),
-        getDocs(query(collection(db, "investments"), orderBy("createdAt", "desc"), limit(500)))
-      ]);
-      state.plans = plansSnap.data()?.plans || [];
-      state.investments = investmentsSnap.docs.map(toRecord);
+      const data = await apiRequest("/admin/investments", { method: "GET" });
+      state.plans = data.plans || [];
+      state.investments = data.investments || [];
     }
   };
 
@@ -462,8 +458,23 @@ function bindWithdrawalActions() {
 
 async function callFunction(name, payload = {}) {
   if (!state.user) throw new Error("Admin must be signed in.");
-  if (!state.isAdmin) throw new Error("Admin claim is required.");
-  return (await httpsCallable(functions, name)(payload)).data;
+  if (!state.isAdmin) throw new Error("Admin role is required.");
+  const routes = {
+    adminUpsertTask: () => ({ path: "/admin/tasks", body: payload }),
+    adminArchiveTask: () => ({ path: `/admin/tasks/${encodeURIComponent(payload.taskId)}/archive`, body: {} }),
+    adminUpsertVipLevel: () => ({ path: "/admin/vip-levels", body: payload }),
+    adminUpsertInvestmentPlan: () => ({ path: "/admin/investment-plans", body: payload }),
+    adminSetInvestmentStatus: () => ({ path: `/admin/investments/${encodeURIComponent(payload.investmentId)}/status`, body: { status: payload.status } }),
+    adminAdjustBalance: () => ({ path: "/admin/users/action", body: { ...payload, action: "adjustBalance" } }),
+    adminSetUserVip: () => ({ path: "/admin/users/action", body: { ...payload, action: "setVip" } }),
+    adminSetUserStatus: () => ({ path: "/admin/users/action", body: { ...payload, action: "setStatus" } }),
+    approveDeposit: () => ({ path: `/admin/deposits/${encodeURIComponent(payload.depositId)}/approve`, body: { approvedAmount: payload.approvedAmount } }),
+    rejectDeposit: () => ({ path: `/admin/deposits/${encodeURIComponent(payload.depositId)}/reject`, body: { reason: payload.reason } }),
+    settleWithdrawal: () => ({ path: `/admin/withdrawals/${encodeURIComponent(payload.withdrawalId)}/settle`, body: { status: payload.status, payoutTxId: payload.payoutTxId } })
+  };
+  const route = routes[name]?.();
+  if (!route) throw new Error(`Unsupported admin action: ${name}`);
+  return apiRequest(route.path, { body: route.body });
 }
 
 async function withButton(button, action) {
@@ -496,10 +507,6 @@ function sanitizeTask(data) {
     status: data.status || "active",
     sortOrder: Date.now()
   };
-}
-
-function toRecord(snapshot) {
-  return { id: snapshot.id, ...snapshot.data() };
 }
 
 function formData(form) {

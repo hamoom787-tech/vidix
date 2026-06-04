@@ -1,10 +1,7 @@
 import { createUserWithEmailAndPassword, deleteUser, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { httpsCallable } from "firebase/functions";
-import { auth, functions } from "./firebase-config";
+import { auth } from "./firebase-config";
+import { apiRequest } from "./api/backend-client";
 import { assertFundPassword, assertReferralCode } from "./utils/validators";
-
-const completeRegistration = httpsCallable(functions, "completeRegistration");
-const setFundPassword = httpsCallable(functions, "setFundPassword");
 
 export async function registerNewUser({
   email,
@@ -23,16 +20,16 @@ export async function registerNewUser({
       await updateProfile(credential.user, { displayName });
     }
 
-    // The user document is created by Cloud Functions, not directly by the client.
-    // This keeps `users/{uid}.balances`, `vipLevel`, and referral fields protected by security rules.
-    await completeRegistration({
+    await apiRequest("/auth/complete-registration", {
+      body: {
       referralCode,
       phone,
       displayName,
-      authProvider: "email"
+        fundPassword: secureFundPassword,
+        authProvider: "email"
+      }
     });
 
-    await setFundPassword({ fundPassword: secureFundPassword });
     return credential.user;
   } catch (error) {
     await deleteUser(credential.user).catch(() => {});

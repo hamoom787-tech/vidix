@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "vidix-api",
+  "main": "worker/src/index.js",
+  "compatibility_date": "2026-06-05",
+  "compatibility_flags": ["nodejs_compat_v2"],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "vars": {
+    "FIREBASE_PROJECT_ID": "vidix-4b996",
+    "FIRESTORE_DATABASE_ID": "(default)",
+    "ALLOWED_ORIGINS": "https://vidix-4b996.web.app,http://127.0.0.1:5173,http://localhost:5173"
+  }
+}

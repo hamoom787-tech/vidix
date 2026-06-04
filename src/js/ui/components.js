@@ -195,7 +195,7 @@ export function renderTasks(container, onOpenTask) {
     <section class="section-head">
       <div>
         <h2>Task Center</h2>
-        <p>Watch-time is client-side UX only; rewards are validated by Cloud Functions.</p>
+        <p>Watch-time is client-side UX only; rewards are validated by the Cloudflare Worker backend.</p>
       </div>
       <div class="segmented-control" style="max-width: 420px;">
         <button class="segment active" type="button" data-status-tab="all">All</button>
@@ -359,8 +359,8 @@ export function renderDeposit(container, onSubmit) {
           <label>TxID / Hash
             <input id="deposit-txid" type="text" placeholder="Blockchain transaction hash" required />
           </label>
-          <label>Receipt screenshot
-            <input id="deposit-receipt" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" required />
+          <label>Payment proof reference
+            <input id="deposit-receipt-reference" type="text" placeholder="Receipt URL, payment reference, or confirmation code" required />
           </label>
         </div>
         <button class="primary-button" style="margin-top: 14px;" type="submit">
@@ -410,7 +410,7 @@ export function renderDeposit(container, onSubmit) {
       network: networkSelect.value,
       amount: amountInput.value,
       txId: container.querySelector("#deposit-txid").value,
-      receiptFile: container.querySelector("#deposit-receipt").files[0]
+      receiptReference: container.querySelector("#deposit-receipt-reference").value
     });
   });
 }

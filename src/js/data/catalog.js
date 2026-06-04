@@ -15,8 +15,8 @@ export const mobileNavRoutes = ["home", "tasks", "vip", "team", "profile"];
 export const banners = [
   {
     title: "منصة مهام واستثمارات بإدارة مالية محمية",
-    kicker: "Secure Firebase Architecture",
-    body: "كل عملية مالية حساسة تمر عبر Cloud Functions مع سجل Ledger قابل للتدقيق.",
+    kicker: "Secure Cloudflare Architecture",
+    body: "كل عملية مالية حساسة تمر عبر Cloudflare Worker مع سجل Ledger قابل للتدقيق.",
     image:
       "https://images.unsplash.com/photo-1642427749670-f20e2e76ed8c?auto=format&fit=crop&w=1600&q=80"
   },

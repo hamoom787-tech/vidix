@@ -1,10 +1,7 @@
 import { collection, getDocs, limit, query, where } from "firebase/firestore";
-import { httpsCallable } from "firebase/functions";
-import { auth, db, functions } from "./firebase-config";
+import { auth, db } from "./firebase-config";
+import { apiRequest } from "./api/backend-client";
 import { todayKey } from "./utils/formatters";
-
-const completeTask = httpsCallable(functions, "completeTask");
-const startTaskWatch = httpsCallable(functions, "startTaskWatch");
 
 export async function getCompletedTasksToday(uid = auth.currentUser?.uid, day = todayKey()) {
   if (!uid) throw new Error("Authentication is required.");
@@ -22,23 +19,21 @@ export async function getCompletedTasksToday(uid = auth.currentUser?.uid, day = 
 
 export async function startTaskWatchSession(taskId) {
   if (!auth.currentUser) throw new Error("Authentication is required.");
-  const response = await startTaskWatch({ taskId });
-  return response.data;
+  return apiRequest("/tasks/start", { body: { taskId } });
 }
 
 export async function claimRewardAfterCountdown(taskId, watchSessionId) {
   if (!auth.currentUser) throw new Error("Authentication is required.");
   if (!watchSessionId) throw new Error("Watch session is required.");
 
-  // Daily limit, VIP eligibility, duplicate task checks, balance update, task log,
-  // and referral commission distribution are all performed atomically in Cloud Functions.
-  const response = await completeTask({
+  return apiRequest("/tasks/complete", {
+    body: {
     taskId,
     watchSessionId,
     dayKey: todayKey(),
     watchedAt: Date.now()
+    }
   });
-  return response.data;
 }
 
 export function bindClaimRewardButton(button, taskId, watchSessionId, { onSuccess, onError } = {}) {
