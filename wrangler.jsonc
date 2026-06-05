@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "vidix-api",
+  "account_id": "aae78157feccb008f502a2951e2a2152",
   "main": "worker/src/index.js",
   "compatibility_date": "2026-06-05",
   "compatibility_flags": ["nodejs_compat_v2"],
