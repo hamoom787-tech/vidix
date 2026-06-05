@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Sapphire VidiX avatar">
+  <defs>
+    <linearGradient id="g" x1="20" y1="20" x2="140" y2="140" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38bdf8"/>
+      <stop offset=".55" stop-color="#161b22"/>
+      <stop offset="1" stop-color="#00e676"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="34" fill="#0d0f12"/>
+  <circle cx="80" cy="80" r="62" fill="#111827" stroke="url(#g)" stroke-width="5"/>
+  <path d="M80 31 123 57v48l-43 25-43-25V57Z" fill="#161b22" stroke="#38bdf8" stroke-opacity=".55" stroke-width="3"/>
+  <path d="M56 58h18l6 35 6-35h18l-13 49H69Z" fill="#ffffff"/>
+  <path d="M36 115c26 16 62 16 88 0" fill="none" stroke="#00e676" stroke-width="4" stroke-linecap="round"/>
+</svg>

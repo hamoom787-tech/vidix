@@ -15,17 +15,17 @@ const DEFAULT_WITHDRAWAL_SETTINGS = {
 const DEFAULT_SYSTEM_SETTINGS = {
   "system_settings/vip_levels": {
     levels: [
-      { id: "M0", price: 0, dailyTasks: 1, reward: 0.25 },
-      { id: "M1", price: 20, dailyTasks: 2, reward: 0.55 },
-      { id: "M2", price: 125, dailyTasks: 5, reward: 1 },
-      { id: "M3", price: 250, dailyTasks: 8, reward: 1.35 },
-      { id: "M4", price: 700, dailyTasks: 14, reward: 2.2 },
-      { id: "M5", price: 2300, dailyTasks: 22, reward: 4 },
-      { id: "M6", price: 5000, dailyTasks: 32, reward: 6.5 },
-      { id: "M7", price: 9000, dailyTasks: 44, reward: 8.75 },
-      { id: "M8", price: 15000, dailyTasks: 58, reward: 11 },
-      { id: "M9", price: 25000, dailyTasks: 72, reward: 15 },
-      { id: "M10", price: 50000, dailyTasks: 100, reward: 21 }
+      { id: "M0", price: 0, dailyTasks: 2, reward: 1 },
+      { id: "M1", price: 20, dailyTasks: 2, reward: 1 },
+      { id: "M2", price: 125, dailyTasks: 2, reward: 1 },
+      { id: "M3", price: 250, dailyTasks: 2, reward: 1 },
+      { id: "M4", price: 700, dailyTasks: 2, reward: 1 },
+      { id: "M5", price: 2300, dailyTasks: 2, reward: 1 },
+      { id: "M6", price: 5000, dailyTasks: 2, reward: 1 },
+      { id: "M7", price: 9000, dailyTasks: 2, reward: 1 },
+      { id: "M8", price: 15000, dailyTasks: 2, reward: 1 },
+      { id: "M9", price: 25000, dailyTasks: 2, reward: 1 },
+      { id: "M10", price: 50000, dailyTasks: 2, reward: 1 }
     ]
   },
   "system_settings/referrals": {
@@ -90,7 +90,7 @@ const DEFAULT_TASKS = {
   "tasks/task-taylor-swift": {
     title: "Taylor Swift Premiere",
     category: "Music Documentary",
-    vipRequired: "M1",
+    vipRequired: "M0",
     reward: 1,
     durationSeconds: 12,
     status: "active",
@@ -101,7 +101,7 @@ const DEFAULT_TASKS = {
   "tasks/task-wimpy-kid": {
     title: "Diary of a Wimpy Kid",
     category: "Family Trailer",
-    vipRequired: "M1",
+    vipRequired: "M0",
     reward: 1,
     durationSeconds: 12,
     status: "active",
@@ -115,7 +115,7 @@ const DEFAULT_TASKS = {
     vipRequired: "M2",
     reward: 1,
     durationSeconds: 12,
-    status: "active",
+    status: "archived",
     sortOrder: 30,
     posterUrl: "/assets/images/banners/vidix-cinema-vip.png",
     videoUrl: "https://www.youtube.com/embed/tgbNymZ7vqY"
@@ -123,10 +123,10 @@ const DEFAULT_TASKS = {
   "tasks/task-gupta-journey": {
     title: "Gupta's Journey",
     category: "Cinema Trailer",
-    vipRequired: "M3",
+    vipRequired: "M0",
     reward: 1,
     durationSeconds: 12,
-    status: "active",
+    status: "archived",
     sortOrder: 40,
     posterUrl: "/assets/images/brand/vidix-hex-logo-scene.png",
     videoUrl: "https://www.youtube.com/embed/ysz5S6PUM-U"

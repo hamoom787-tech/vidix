@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Emerald VidiX avatar">
+  <defs>
+    <linearGradient id="g" x1="18" y1="18" x2="142" y2="142" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00e676"/>
+      <stop offset=".45" stop-color="#0d0f12"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feColorMatrix in="b" values="0 0 0 0 0 0 0 0 0 0.9 0 0 0 0 0.45 0 0 0 .85 0"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="160" height="160" rx="34" fill="#0d0f12"/>
+  <path d="M80 16 134 47v66L80 144l-54-31V47Z" fill="#161b22" stroke="url(#g)" stroke-width="5" filter="url(#glow)"/>
+  <path d="M51 57h22l7 41 7-41h22l-15 62H66Z" fill="#fff"/>
+  <circle cx="80" cy="80" r="55" fill="none" stroke="#00e676" stroke-opacity=".2" stroke-width="2"/>
+</svg>

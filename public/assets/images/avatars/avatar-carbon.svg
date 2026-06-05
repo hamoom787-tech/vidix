@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Carbon VidiX avatar">
+  <defs>
+    <pattern id="p" width="18" height="18" patternUnits="userSpaceOnUse">
+      <path d="M0 18 18 0M-5 5 5-5M13 23 23 13" stroke="#30363d" stroke-width="2"/>
+    </pattern>
+  </defs>
+  <rect width="160" height="160" rx="34" fill="#0d0f12"/>
+  <rect x="18" y="18" width="124" height="124" rx="30" fill="url(#p)" stroke="#30363d" stroke-width="4"/>
+  <path d="M80 29 126 56v53l-46 27-46-27V56Z" fill="#161b22" stroke="#00e676" stroke-width="4"/>
+  <path d="M53 58h20l7 42 7-42h20l-15 60H68Z" fill="#00e676"/>
+  <path d="M36 43h88" stroke="#ffffff" stroke-opacity=".15" stroke-width="4" stroke-linecap="round"/>
+</svg>

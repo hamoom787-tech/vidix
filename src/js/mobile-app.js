@@ -1,5 +1,5 @@
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, doc, getDoc, getDocs, limit, onSnapshot, orderBy, query, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, limit, onSnapshot, orderBy, query, updateDoc, where } from "firebase/firestore";
 import { auth, db } from "./firebase-config";
 import { apiRequest } from "./api/backend-client";
 import { loginUser, registerNewUser } from "./firebase-auth";
@@ -8,16 +8,185 @@ import { escapeHtml, formatMoney, showToast, withLoading } from "./ui/async-ui";
 
 const state = {
   authMode: "login",
+  language: getInitialLanguage(),
   user: null,
   profile: null,
   profileUnsubscribe: null,
   selectedPaymentMethod: "BINANCE_USDT_BSC",
   walletSettings: null,
   tasks: [],
+  completedTaskIdsToday: new Set(),
+  dailyTaskLimit: 2,
   activeTask: null,
   activeSession: null,
   countdownTimer: null
 };
+
+const AVATAR_OPTIONS = [
+  { id: "emerald", label: "Emerald", url: "/assets/images/avatars/avatar-emerald.svg" },
+  { id: "sapphire", label: "Sapphire", url: "/assets/images/avatars/avatar-sapphire.svg" },
+  { id: "gold", label: "Gold", url: "/assets/images/avatars/avatar-gold.svg" },
+  { id: "violet", label: "Violet", url: "/assets/images/avatars/avatar-violet.svg" },
+  { id: "carbon", label: "Carbon", url: "/assets/images/avatars/avatar-carbon.svg" },
+  { id: "neon", label: "Neon", url: "/assets/images/avatars/avatar-neon.svg" }
+];
+
+const TRANSLATIONS = {
+  ar: {
+    aboutUs: "عن الشركة",
+    accountCreated: "تم إنشاء الحساب بأمان.",
+    accountPassword: "كلمة مرور الحساب",
+    adminPanel: "لوحة الإدارة",
+    appDownload: "تحميل التطبيق",
+    avatarSaved: "تم حفظ صورة الحساب.",
+    back: "رجوع",
+    bindWallet: "ربط محفظة كريبتو",
+    bindWalletFirst: "اربط محفظة من حسابك أولاً",
+    certificates: "الشهادات",
+    chooseAvatar: "اختار صورة الحساب",
+    claimLocked: "استلام المكافأة",
+    claimUnlocked: "استلام {reward}",
+    commission: "العمولة",
+    completedToday: "اكتملت اليوم",
+    copy: "نسخ",
+    createAccount: "إنشاء الحساب",
+    currentStatus: "المستوى الحالي",
+    deposit: "شحن",
+    depositFxEgp: "{amount} جنيه = {usdt} USDT بسعر {rate} جنيه/USDT",
+    depositFxUsdt: "{amount} USDT سيتم مراجعته وإضافته كرصيد بالدولار.",
+    depositSubmitted: "تم إرسال طلب الشحن: {id}",
+    email: "البريد الإلكتروني",
+    emailPlaceholder: "member@example.com",
+    fundLogs: "سجلات الصندوق المالي",
+    fundPassword: "كلمة مرور العمليات المالية",
+    fundPasswordPlaceholder: "6 أرقام أو أكثر",
+    guide: "الدليل",
+    home: "الرئيسية",
+    invitationCode: "كود الدعوة",
+    invite: "دعوة",
+    invoiceDetails: "تفاصيل الفاتورة",
+    joinNow: "انضم الآن",
+    languageChanged: "تم تغيير اللغة.",
+    livePayoutTracker: "متابعة الأرباح المباشرة",
+    login: "دخول",
+    loginSubtitle: "حساب، كود دعوة، وكلمة عمليات مالية منفصلة.",
+    loginTitle: "تسجيل الدخول",
+    mainBalance: "الرصيد الأساسي",
+    myAccount: "حسابي",
+    noTasks: "لا توجد مهام متاحة لمستواك الحالي.",
+    notSignedIn: "لم يتم تسجيل الدخول",
+    passwordPlaceholder: "••••••••",
+    paymentCopied: "تم نسخ بيانات الدفع.",
+    platformAds: "إعلانات المنصة",
+    profileStyle: "شكل الحساب",
+    referralPlaceholder: "VX-ROOT",
+    remainingWatchTime: "وقت المشاهدة المتبقي",
+    resetFundPassword: "تغيير كلمة مرور الصندوق",
+    rewardClaimed: "تم استلام المكافأة بأمان.",
+    secureAccess: "دخول آمن",
+    secureContinue: "متابعة آمنة",
+    signedIn: "تم تسجيل الدخول.",
+    signInFirst: "سجل الدخول أولاً.",
+    signup: "إنشاء حساب",
+    startWatch: "ابدأ المشاهدة",
+    tagline: "منصة ربح فيديو آمنة",
+    tapToSave: "اضغط للحفظ",
+    taskCompletedAll: "تم إنهاء كل مهام اليوم. ارجع غدًا لمهمتين جديدتين.",
+    taskDailyNote: "مهام اليوم: مهمتان فقط، كل مهمة بقيمة $1.00.",
+    taskHall: "قاعة المهام",
+    taskMissing: "المهمة غير موجودة.",
+    taskProgress: "مهام اليوم: {done}/{limit}",
+    tasks: "المهام",
+    today: "اليوم",
+    totalRevenue: "إجمالي الأرباح",
+    unlocked: "مفتوح",
+    vipLevels: "مستويات العضوية",
+    walletBalance: "رصيد المحفظة",
+    watchSeconds: "{seconds} ثانية مشاهدة - {vip}",
+    watchTask: "مهمة مشاهدة",
+    withdraw: "سحب",
+    withdrawalFee: "الرسوم: {fee} - الصافي: {net} - الحد الأدنى: {minimum}",
+    withdrawalPending: "طلب السحب قيد المراجعة. الصافي: {net} الرسوم: {fee}"
+  },
+  en: {
+    aboutUs: "About Us",
+    accountCreated: "Account created securely.",
+    accountPassword: "Account password",
+    adminPanel: "Admin Panel",
+    appDownload: "App Download",
+    avatarSaved: "Profile avatar saved.",
+    back: "Back",
+    bindWallet: "Bind Crypto Wallet",
+    bindWalletFirst: "Bind a wallet in profile first",
+    certificates: "Certificates",
+    chooseAvatar: "Choose your avatar",
+    claimLocked: "Claim Reward",
+    claimUnlocked: "Claim {reward}",
+    commission: "Commission",
+    completedToday: "Completed today",
+    copy: "Copy",
+    createAccount: "Create Account",
+    currentStatus: "Current Status",
+    deposit: "Deposit",
+    depositFxEgp: "{amount} EGP = {usdt} USDT at {rate} EGP/USDT",
+    depositFxUsdt: "{amount} USDT will be reviewed and credited as USD balance.",
+    depositSubmitted: "Deposit submitted: {id}",
+    email: "Email",
+    emailPlaceholder: "member@example.com",
+    fundLogs: "Financial Fund Logs",
+    fundPassword: "Fund password",
+    fundPasswordPlaceholder: "6 digits or more",
+    guide: "Guide",
+    home: "Home",
+    invitationCode: "Invitation code",
+    invite: "Invite",
+    invoiceDetails: "Invoice Details",
+    joinNow: "Join Now",
+    languageChanged: "Language changed.",
+    livePayoutTracker: "Live Payout Tracker",
+    login: "Login",
+    loginSubtitle: "Account access, invitation code, and separate fund password.",
+    loginTitle: "Sign in",
+    mainBalance: "Main Balance",
+    myAccount: "My Account",
+    noTasks: "No tasks available for your current VIP level.",
+    notSignedIn: "Not signed in",
+    passwordPlaceholder: "••••••••",
+    paymentCopied: "Payment detail copied.",
+    platformAds: "Platform Ads",
+    profileStyle: "Profile Style",
+    referralPlaceholder: "VX-ROOT",
+    remainingWatchTime: "Remaining Watch Time",
+    resetFundPassword: "Reset Fund Password",
+    rewardClaimed: "Reward claimed securely.",
+    secureAccess: "Secure Access",
+    secureContinue: "Secure Continue",
+    signedIn: "Signed in.",
+    signInFirst: "Sign in first.",
+    signup: "Sign Up",
+    startWatch: "Start Watch",
+    tagline: "Secure video earning",
+    tapToSave: "Tap to save",
+    taskCompletedAll: "All daily tasks are completed. Come back tomorrow for two fresh videos.",
+    taskDailyNote: "Daily tasks: only two videos, each pays $1.00.",
+    taskHall: "Task Hall",
+    taskMissing: "Task not found.",
+    taskProgress: "Today: {done}/{limit}",
+    tasks: "Tasks",
+    today: "Today",
+    totalRevenue: "Total Revenue",
+    unlocked: "Unlocked",
+    vipLevels: "VIP Levels",
+    walletBalance: "Wallet Balance",
+    watchSeconds: "{seconds} seconds watch task - {vip}",
+    watchTask: "Watch Task",
+    withdraw: "Withdraw",
+    withdrawalFee: "Fee: {fee} - Net payout: {net} - Minimum: {minimum}",
+    withdrawalPending: "Withdrawal pending. Net: {net} Fee: {fee}"
+  }
+};
+
+normalizeTranslations();
 
 const workerCall = (path) => async (payload) => ({ data: await apiRequest(path, { body: payload }) });
 const startTaskWatch = workerCall("/tasks/start");
@@ -28,8 +197,10 @@ const joinInvestment = workerCall("/investments");
 bootstrap();
 
 function bootstrap() {
+  bindLanguageSwitcher();
   bindNavigation();
   bindAuth();
+  bindAvatarPicker();
   bindDeposit();
   bindWithdrawal();
   bindVip();
@@ -47,6 +218,7 @@ function bootstrap() {
       renderProfile(null);
       showScreen("auth");
       state.tasks = [];
+      state.completedTaskIdsToday = new Set();
       renderTasks();
       return;
     }
@@ -61,6 +233,17 @@ function bootstrap() {
   });
 }
 
+function bindLanguageSwitcher() {
+  document.querySelectorAll("[data-language]").forEach((button) => {
+    button.addEventListener("click", () => setLanguage(button.dataset.language, true));
+  });
+  setLanguage(state.language);
+}
+
+function bindAvatarPicker() {
+  renderAvatarPicker();
+}
+
 function bindNavigation() {
   document.querySelectorAll("[data-screen-target]").forEach((button) => {
     button.addEventListener("click", () => showScreen(button.dataset.screenTarget));
@@ -71,8 +254,10 @@ function bindAuth() {
   document.querySelectorAll("[data-auth-mode]").forEach((button) => {
     button.addEventListener("click", () => {
       state.authMode = button.dataset.authMode;
+      renderAuthMode();
     });
   });
+  renderAuthMode();
 
   document.querySelector("#auth-form")?.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -87,10 +272,10 @@ function bindAuth() {
     await withLoading(event.submitter, async () => {
       if (state.authMode === "signup") {
         await registerNewUser(payload);
-        showToast("Account created securely.", "success");
+        showToast(t("accountCreated"), "success");
       } else {
         await loginUser(payload);
-        showToast("Signed in.", "success");
+        showToast(t("signedIn"), "success");
       }
       showScreen("home");
     });
@@ -119,7 +304,7 @@ function bindDeposit() {
       });
       document.querySelector("#deposit-txid").value = "";
       document.querySelector("#receipt-reference").value = "";
-      showToast(`Deposit submitted: ${result.depositId}`, "success");
+      showToast(t("depositSubmitted", { id: result.depositId }), "success");
     });
   });
 }
@@ -140,7 +325,7 @@ function bindWithdrawal() {
       });
       document.querySelector("#withdraw-amount").value = "";
       document.querySelector("#withdraw-fund-password").value = "";
-      showToast(`Withdrawal pending. Net: ${formatMoney(result.netAmount)} Fee: ${formatMoney(result.fee)}`, "success");
+      showToast(t("withdrawalPending", { net: formatMoney(result.netAmount), fee: formatMoney(result.fee) }), "success");
     });
   });
 }
@@ -151,7 +336,7 @@ function bindVip() {
       await withLoading(button, async () => {
         requireSignedIn();
         const result = await upgradeVip({ levelId: button.dataset.vipLevel });
-        showToast(`VIP upgraded to ${result.data.vipLevel}.`, "success");
+        showToast(`VIP ${result.data.vipLevel}`, "success");
       }, "Joining");
     });
   });
@@ -186,9 +371,10 @@ function bindClaimButton() {
           taskId: state.activeTask.id,
           watchSessionId: state.activeSession.sessionId
         });
+        state.completedTaskIdsToday.add(state.activeTask.id);
         state.activeTask = null;
         state.activeSession = null;
-        showToast("Reward claimed securely.", "success");
+        showToast(t("rewardClaimed"), "success");
         await loadTasks();
         showScreen("tasks");
       }, "Claiming");
@@ -221,8 +407,22 @@ async function loadWalletSettings() {
 }
 
 async function loadTasks() {
-  const snapshot = await getDocs(query(collection(db, "tasks"), where("status", "==", "active"), orderBy("sortOrder", "asc"), limit(100)));
-  state.tasks = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+  const [taskSnapshot, completedSnapshot] = await Promise.all([
+    getDocs(query(collection(db, "tasks"), where("status", "==", "active"), orderBy("sortOrder", "asc"), limit(100))),
+    state.user
+      ? getDocs(
+          query(
+            collection(db, "user_tasks"),
+            where("uid", "==", state.user.uid),
+            where("dayKey", "==", dayKey()),
+            where("status", "==", "completed"),
+            limit(20)
+          )
+        )
+      : Promise.resolve({ docs: [] })
+  ]);
+  state.tasks = taskSnapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+  state.completedTaskIdsToday = new Set(completedSnapshot.docs.map((item) => item.data().taskId).filter(Boolean));
   renderTasks();
 }
 
@@ -230,41 +430,64 @@ function renderTasks() {
   const taskList = document.querySelector("#task-list");
   if (!taskList) return;
   const vipLevel = state.profile?.vipLevel || "M0";
-  const tasks = state.tasks.filter((task) => vipAllowed(vipLevel, task.vipRequired || "M0"));
+  const tasks = state.tasks.filter((task) => vipAllowed(vipLevel, task.vipRequired || "M0")).slice(0, state.dailyTaskLimit);
+  const completedCount = Math.min(tasks.filter((task) => state.completedTaskIdsToday.has(task.id)).length, state.dailyTaskLimit);
+  renderTaskProgress(completedCount, state.dailyTaskLimit);
   taskList.innerHTML = tasks.length
     ? tasks
         .map(
-          (task) => `
-            <article class="task-card" data-task-id="${escapeHtml(task.id)}">
+          (task) => {
+            const isCompleted = state.completedTaskIdsToday.has(task.id);
+            return `
+            <article class="task-card ${isCompleted ? "opacity-70" : ""}" data-task-id="${escapeHtml(task.id)}">
               <img src="${escapeHtml(task.posterUrl)}" alt="${escapeHtml(task.title)}" />
               <div class="p-4">
                 <div class="flex items-center justify-between gap-3">
                   <h3 class="text-lg font-black">${escapeHtml(task.title)}</h3>
                   <strong class="font-money text-emeraldNeon">${formatMoney(task.reward)}</strong>
                 </div>
-                <p class="mt-1 text-sm text-mutedSilver">${Number(task.durationSeconds || 12)} seconds watch task - ${escapeHtml(task.vipRequired || "M0")}</p>
-                <button class="mt-4 h-12 w-full rounded-2xl bg-emeraldNeon font-black text-obsidian" type="button" data-start-secure-task="${escapeHtml(task.id)}">Start Watch</button>
+                <p class="mt-1 text-sm text-mutedSilver">${escapeHtml(t("watchSeconds", { seconds: Number(task.durationSeconds || 12), vip: task.vipRequired || "M0" }))}</p>
+                ${
+                  isCompleted
+                    ? `<button class="mt-4 h-12 w-full rounded-2xl border border-emeraldNeon/35 bg-emeraldNeon/10 font-black text-emeraldNeon" type="button" disabled>${escapeHtml(t("completedToday"))}</button>`
+                    : `<button class="mt-4 h-12 w-full rounded-2xl bg-emeraldNeon font-black text-obsidian" type="button" data-start-secure-task="${escapeHtml(task.id)}">${escapeHtml(t("startWatch"))}</button>`
+                }
               </div>
             </article>
-          `
+          `;
+          }
         )
         .join("")
-    : `<article class="rounded-2xl border border-slateLine bg-frost p-4 text-sm font-bold text-mutedSilver">No tasks available for your current VIP level.</article>`;
+    : `<article class="rounded-2xl border border-slateLine bg-frost p-4 text-sm font-bold text-mutedSilver">${escapeHtml(t("noTasks"))}</article>`;
+
+  if (tasks.length > 0 && completedCount >= state.dailyTaskLimit) {
+    taskList.insertAdjacentHTML(
+      "afterbegin",
+      `<article class="rounded-2xl border border-emeraldNeon/25 bg-emeraldNeon/10 p-4 text-sm font-black text-emeraldNeon">${escapeHtml(t("taskCompletedAll"))}</article>`
+    );
+  }
 
   taskList.querySelectorAll("[data-start-secure-task]").forEach((button) => {
     button.addEventListener("click", async () => {
       await withLoading(button, async () => {
         requireSignedIn();
         const task = state.tasks.find((item) => item.id === button.dataset.startSecureTask);
-        if (!task) throw new Error("Task not found.");
+        if (!task) throw new Error(t("taskMissing"));
         const session = await startTaskWatch({ taskId: task.id });
         state.activeTask = task;
         state.activeSession = session.data;
         startCountdown(task, Number(session.data.durationSeconds || task.durationSeconds || 12));
         showScreen("watch");
-      }, "Starting");
+      }, t("startWatch"));
     });
   });
+}
+
+function renderTaskProgress(done, limitCount) {
+  const progress = `${done}/${limitCount}`;
+  setText("[data-task-progress]", progress);
+  setText("[data-home-task-progress]", progress);
+  setText("#task-daily-note", t("taskDailyNote"));
 }
 
 function renderPaymentMethods() {
@@ -284,7 +507,7 @@ function renderPaymentMethods() {
           </div>
           <div class="mt-3 flex items-center gap-2" dir="ltr">
             <code class="min-w-0 flex-1 truncate rounded-xl bg-black/30 px-3 py-3 text-xs text-white">${escapeHtml(method.wallet || method.paymentLink || "")}</code>
-            <button class="rounded-xl bg-emeraldNeon px-3 py-3 text-xs font-black text-obsidian" type="button" data-copy-value="${escapeHtml(method.wallet || method.paymentLink || "")}">Copy</button>
+            <button class="rounded-xl bg-emeraldNeon px-3 py-3 text-xs font-black text-obsidian" type="button" data-copy-value="${escapeHtml(method.wallet || method.paymentLink || "")}">${escapeHtml(t("copy"))}</button>
           </div>
           ${method.paymentLink ? `<a class="mt-3 flex h-11 items-center justify-center rounded-xl border border-vipGold/40 bg-vipGold/10 text-sm font-black text-vipGold" href="${escapeHtml(method.paymentLink)}" target="_blank" rel="noopener">Open Payment Link</a>` : ""}
         </article>
@@ -304,7 +527,7 @@ function renderPaymentMethods() {
   root.querySelectorAll("[data-copy-value]").forEach((button) => {
     button.addEventListener("click", async () => {
       await navigator.clipboard.writeText(button.dataset.copyValue);
-      showToast("Payment detail copied.", "success");
+      showToast(t("paymentCopied"), "success");
     });
   });
 
@@ -315,7 +538,7 @@ function renderProfile(profile) {
   const main = profile?.balances?.main || 0;
   const commission = profile?.balances?.commission || 0;
   const income = profile?.income || {};
-  setText("[data-profile-uid]", profile?.id ? `UID: ${profile.id}` : "Not signed in");
+  setText("[data-profile-uid]", profile?.id ? `UID: ${profile.id}` : t("notSignedIn"));
   setText("[data-main-balance]", formatMoney(main));
   setText("[data-commission-balance]", formatMoney(commission));
   setText("[data-today-income]", formatMoney(income.today || 0));
@@ -323,6 +546,50 @@ function renderProfile(profile) {
   setText("[data-home-balance]", formatMoney(main + commission));
   setText("[data-home-income]", formatMoney(income.today || 0));
   setText("[data-home-vip]", profile?.vipLevel || "M0");
+  renderProfileAvatar(profile);
+  renderAvatarPicker(profile);
+}
+
+function renderProfileAvatar(profile) {
+  const avatar = selectedAvatar(profile);
+  const image = document.querySelector("#profile-avatar");
+  if (image) {
+    image.src = avatar.url;
+    image.alt = `${avatar.label} VidiX avatar`;
+  }
+}
+
+function renderAvatarPicker(profile = state.profile) {
+  const root = document.querySelector("#avatar-picker");
+  if (!root) return;
+  const selectedId = selectedAvatar(profile).id;
+  root.innerHTML = AVATAR_OPTIONS.map(
+    (avatar) => `
+      <button
+        class="avatar-option ${avatar.id === selectedId ? "active" : ""}"
+        type="button"
+        data-avatar-id="${escapeHtml(avatar.id)}"
+        aria-label="${escapeHtml(avatar.label)}"
+      >
+        <img src="${escapeHtml(avatar.url)}" alt="${escapeHtml(avatar.label)}" />
+      </button>
+    `
+  ).join("");
+
+  root.querySelectorAll("[data-avatar-id]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await withLoading(button, async () => {
+        requireSignedIn();
+        const avatar = AVATAR_OPTIONS.find((item) => item.id === button.dataset.avatarId) || AVATAR_OPTIONS[0];
+        await updateDoc(doc(db, "users", state.user.uid), {
+          avatarId: avatar.id,
+          avatarUrl: avatar.url,
+          updatedAt: new Date()
+        });
+        showToast(t("avatarSaved"), "success");
+      });
+    });
+  });
 }
 
 function renderVipStatus() {
@@ -332,13 +599,13 @@ function renderVipStatus() {
     const isCurrent = target === current;
     const isLower = vipOrder(target) <= vipOrder(current);
     button.disabled = isLower;
-    button.textContent = isCurrent ? "Current Status" : isLower ? "Unlocked" : "Join Now";
+    button.textContent = isCurrent ? t("currentStatus") : isLower ? t("unlocked") : t("joinNow");
   });
 }
 
 function renderWithdrawalWallet() {
   const wallet = firstBoundWallet(state.profile?.wallets);
-  const display = wallet?.address || "Bind a wallet in profile first";
+  const display = wallet?.address || t("bindWalletFirst");
   const walletText = document.querySelector("#withdraw-wallet-display");
   const walletInput = document.querySelector("#withdraw-wallet");
   if (walletText) walletText.textContent = display;
@@ -351,7 +618,7 @@ function renderWithdrawalFee() {
   const amount = Number(document.querySelector("#withdraw-amount")?.value || 0);
   const fee = Math.max(0, amount * Number(settings.feeRate || 0) + Number(settings.fixedFee || 0));
   const net = Math.max(0, amount - fee);
-  setText("#withdraw-fee-note", `Fee: ${formatMoney(fee)} - Net payout: ${formatMoney(net)} - Minimum: ${formatMoney(settings.minimum || 10)}`);
+  setText("#withdraw-fee-note", t("withdrawalFee", { fee: formatMoney(fee), net: formatMoney(net), minimum: formatMoney(settings.minimum || 10) }));
 }
 
 function setDepositPackage(usdAmount) {
@@ -372,9 +639,9 @@ function updateDepositFxNote() {
   if (!method) return;
   if ((method.currency || "USDT").toUpperCase() === "EGP") {
     const rate = Number(state.walletSettings?.fx?.usdtEgpRate || 50);
-    setText("#deposit-fx-note", `${amount.toFixed(2)} EGP = ${(amount / rate).toFixed(2)} USDT balance at ${rate.toFixed(2)} EGP/USDT`);
+    setText("#deposit-fx-note", t("depositFxEgp", { amount: amount.toFixed(2), usdt: (amount / rate).toFixed(2), rate: rate.toFixed(2) }));
   } else {
-    setText("#deposit-fx-note", `${amount.toFixed(2)} USDT will be reviewed and credited as USD balance.`);
+    setText("#deposit-fx-note", t("depositFxUsdt", { amount: amount.toFixed(2) }));
   }
 }
 
@@ -393,7 +660,7 @@ function startCountdown(task, totalSeconds) {
   if (claim) {
     claim.disabled = true;
     claim.classList.remove("unlocked", "animate-pulseGlow");
-    claim.textContent = "Claim Reward / استلام المكافأة";
+    claim.textContent = t("claimLocked");
   }
 
   state.countdownTimer = window.setInterval(() => {
@@ -406,7 +673,7 @@ function startCountdown(task, totalSeconds) {
       if (claim) {
         claim.disabled = false;
         claim.classList.add("unlocked", "animate-pulseGlow");
-        claim.textContent = `Unlocked - Claim ${formatMoney(task.reward)}`;
+        claim.textContent = t("claimUnlocked", { reward: formatMoney(task.reward) });
       }
     }
   }, 250);
@@ -418,12 +685,113 @@ function showScreen(name) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function setLanguage(language, notify = false) {
+  state.language = ["ar", "en"].includes(language) ? language : "ar";
+  try {
+    window.localStorage.setItem("vidix-language", state.language);
+  } catch {
+    // Local storage can be blocked in private browsers; the UI can still switch for the session.
+  }
+
+  document.documentElement.lang = state.language;
+  document.documentElement.dir = state.language === "ar" ? "rtl" : "ltr";
+  document.body?.setAttribute("dir", document.documentElement.dir);
+
+  document.querySelectorAll("[data-language]").forEach((button) => {
+    const isActive = button.dataset.language === state.language;
+    button.classList.toggle("bg-emeraldNeon", isActive);
+    button.classList.toggle("text-obsidian", isActive);
+    button.classList.toggle("text-mutedSilver", !isActive);
+  });
+
+  document.querySelectorAll("[data-i18n]").forEach((node) => {
+    node.textContent = t(node.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
+    node.setAttribute("placeholder", t(node.dataset.i18nPlaceholder));
+  });
+
+  renderAuthMode();
+  renderTasks();
+  renderProfile(state.profile);
+  renderVipStatus();
+  renderWithdrawalWallet();
+  renderPaymentMethods();
+
+  if (notify) showToast(t("languageChanged"), "success");
+}
+
+function renderAuthMode() {
+  const isSignup = state.authMode === "signup";
+  document.querySelectorAll("[data-auth-mode]").forEach((button) => {
+    const isActive = button.dataset.authMode === state.authMode;
+    button.classList.toggle("bg-emeraldNeon", isActive);
+    button.classList.toggle("text-obsidian", isActive);
+    button.classList.toggle("text-mutedSilver", !isActive);
+  });
+  document.querySelectorAll(".signup-field").forEach((field) => field.classList.toggle("hidden", !isSignup));
+  const submit = document.querySelector("#auth-submit");
+  if (submit) submit.textContent = isSignup ? t("createAccount") : t("secureContinue");
+}
+
+function t(key, params = {}) {
+  const dictionary = TRANSLATIONS[state.language] || TRANSLATIONS.ar;
+  const fallback = TRANSLATIONS.en[key] || key;
+  let value = dictionary[key] || fallback;
+  Object.entries(params).forEach(([name, replacement]) => {
+    value = value.replaceAll(`{${name}}`, String(replacement));
+  });
+  return value;
+}
+
+function normalizeTranslations() {
+  Object.values(TRANSLATIONS).forEach((dictionary) => {
+    Object.entries(dictionary).forEach(([key, value]) => {
+      if (typeof value === "string") dictionary[key] = decodeMojibake(value);
+    });
+  });
+}
+
+function decodeMojibake(value) {
+  if (!/[ÃÂØÙâ]/.test(value)) return value;
+  try {
+    const bytes = Uint8Array.from([...value].map((character) => character.charCodeAt(0)));
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    return value;
+  }
+}
+
+function getInitialLanguage() {
+  try {
+    const saved = window.localStorage.getItem("vidix-language");
+    return ["ar", "en"].includes(saved) ? saved : "ar";
+  } catch {
+    return "ar";
+  }
+}
+
 function selectedMethod() {
   return (state.walletSettings?.depositNetworks || []).find((method) => method.id === state.selectedPaymentMethod);
 }
 
+function selectedAvatar(profile = state.profile) {
+  return AVATAR_OPTIONS.find((avatar) => avatar.id === profile?.avatarId) || AVATAR_OPTIONS[0];
+}
+
 function firstBoundWallet(wallets = {}) {
   return Object.values(wallets || {}).find((wallet) => wallet?.address);
+}
+
+function dayKey(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Cairo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(date);
+  const lookup = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${lookup.year}-${lookup.month}-${lookup.day}`;
 }
 
 function vipAllowed(userLevel, requiredLevel) {
@@ -441,7 +809,7 @@ function setText(selector, value) {
 }
 
 function requireSignedIn() {
-  if (!state.user) throw new Error("Sign in first.");
+  if (!state.user) throw new Error(t("signInFirst"));
 }
 
 window.vidixLogout = async () => {

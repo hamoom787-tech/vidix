@@ -52,17 +52,17 @@ export const quickActions = [
 ];
 
 export const vipLevels = [
-  { id: "M0", price: 0, dailyTasks: 1, reward: 0.25, featured: false },
-  { id: "M1", price: 20, dailyTasks: 2, reward: 0.55, featured: false },
-  { id: "M2", price: 125, dailyTasks: 5, reward: 1.0, featured: true },
-  { id: "M3", price: 250, dailyTasks: 8, reward: 1.35, featured: false },
-  { id: "M4", price: 700, dailyTasks: 14, reward: 2.2, featured: false },
-  { id: "M5", price: 2300, dailyTasks: 22, reward: 4.0, featured: false },
-  { id: "M6", price: 5000, dailyTasks: 32, reward: 6.5, featured: false },
-  { id: "M7", price: 9000, dailyTasks: 44, reward: 8.75, featured: false },
-  { id: "M8", price: 15000, dailyTasks: 58, reward: 11.0, featured: false },
-  { id: "M9", price: 25000, dailyTasks: 72, reward: 15.0, featured: false },
-  { id: "M10", price: 50000, dailyTasks: 100, reward: 21.0, featured: false }
+  { id: "M0", price: 0, dailyTasks: 2, reward: 1, featured: false },
+  { id: "M1", price: 20, dailyTasks: 2, reward: 1, featured: false },
+  { id: "M2", price: 125, dailyTasks: 2, reward: 1, featured: true },
+  { id: "M3", price: 250, dailyTasks: 2, reward: 1, featured: false },
+  { id: "M4", price: 700, dailyTasks: 2, reward: 1, featured: false },
+  { id: "M5", price: 2300, dailyTasks: 2, reward: 1, featured: false },
+  { id: "M6", price: 5000, dailyTasks: 2, reward: 1, featured: false },
+  { id: "M7", price: 9000, dailyTasks: 2, reward: 1, featured: false },
+  { id: "M8", price: 15000, dailyTasks: 2, reward: 1, featured: false },
+  { id: "M9", price: 25000, dailyTasks: 2, reward: 1, featured: false },
+  { id: "M10", price: 50000, dailyTasks: 2, reward: 1, featured: false }
 ].map((level) => ({
   ...level,
   dailyProfit: +(level.dailyTasks * level.reward).toFixed(2),
@@ -76,7 +76,7 @@ export const catalogTasks = [
     title: "Mission Brief Trailer",
     category: "Movie Trailers",
     vipRequired: "M0",
-    reward: 0.25,
+    reward: 1,
     durationSeconds: 12,
     thumbnail:
       "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=900&q=80",
@@ -86,23 +86,12 @@ export const catalogTasks = [
     id: "task-short-002",
     title: "Market Product Clip",
     category: "Short Videos",
-    vipRequired: "M1",
-    reward: 0.55,
+    vipRequired: "M0",
+    reward: 1,
     durationSeconds: 12,
     thumbnail:
       "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80",
     videoUrl: "https://www.youtube.com/embed/jNQXAC9IVRw"
-  },
-  {
-    id: "task-cinema-003",
-    title: "Cinema Release Promo",
-    category: "Premium Videos",
-    vipRequired: "M2",
-    reward: 1,
-    durationSeconds: 12,
-    thumbnail:
-      "https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=900&q=80",
-    videoUrl: "https://www.youtube.com/embed/tgbNymZ7vqY"
   }
 ];
 
