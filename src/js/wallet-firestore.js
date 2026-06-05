@@ -9,10 +9,10 @@ export async function submitDepositRequest({ method, paymentMethod, amount, txId
 
   return apiRequest("/deposits", {
     body: {
-    network: paymentMethod || method,
-    paymentMethod: paymentMethod || method,
-    amount: safeAmount,
-    txId: safeTxId,
+      network: paymentMethod || method,
+      paymentMethod: paymentMethod || method,
+      amount: safeAmount,
+      txId: safeTxId,
       receiptUrl: proofReference,
       receiptReference: proofReference
     }
@@ -26,10 +26,10 @@ export async function submitWithdrawalRequest({ sourceWallet = "commission", wal
 
   return apiRequest("/withdrawals", {
     body: {
-    sourceWallet,
-    walletAddress: safeWallet,
-    amount: safeAmount,
-    fundPassword: safeFundPassword
+      sourceWallet,
+      walletAddress: safeWallet,
+      amount: safeAmount,
+      fundPassword: safeFundPassword
     }
   });
 }

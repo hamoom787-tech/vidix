@@ -7,6 +7,7 @@ Premium mobile-first video task earning platform with Firebase Auth/Firestore, a
 - User app: `http://127.0.0.1:5173`
 - Admin panel: `http://127.0.0.1:5173/admin.html`
 - Firebase Emulator UI, when running: `http://127.0.0.1:4000`
+- Firestore emulator: `127.0.0.1:8085`
 
 ## Stack
 
@@ -17,9 +18,14 @@ Premium mobile-first video task earning platform with Firebase Auth/Firestore, a
 ## Key Files
 
 ```text
-index.html                         User mobile UI
+index.html                         Home page entry
+auth.html                          Login/signup entry
+tasks.html / watch.html            Task hall and secure watch pages
+deposit.html / withdraw.html       Money request pages
+profile.html                       Account, balances, avatars, settings links
 admin.html                         Admin Panel UI
-src/js/mobile-app.js               User app controller
+src/js/pages/platform-pages.js      Shared controller for user pages
+src/css/vidix-pages.css            Shared mobile visual system
 src/js/admin-console.js            Admin Panel controller
 worker/src/index.js                Cloudflare Worker backend API
 wrangler.jsonc                     Cloudflare Worker deployment config
@@ -27,6 +33,7 @@ firestore.rules                    Firestore security rules
 tests/firestore.rules.test.js      Rules test suite
 seed/system-settings.json          VIP/referral/wallet/investment settings
 seed/tasks.json                    Default task catalog
+public/assets/images/certificates  Certificate/archive image assets
 .env                               Local emulator-safe Firebase config
 firebase.json                      Hosting and Firestore config
 vite.config.js                     Multi-page build: app + admin
@@ -106,4 +113,5 @@ public/news
 - Seed `system_settings` and `tasks` through `/admin/seed-defaults`.
 - Deploy Firestore rules, indexes, Hosting, and Cloudflare Worker.
 - Replace local/static assets with licensed posters and final VidiX brand files.
+- Replace `public/assets/images/certificates/legacy-mbitir-status-certificate.jpg` with an official VidiX certificate before making public legal claims.
 - Review referral/investment wording legally before public launch.

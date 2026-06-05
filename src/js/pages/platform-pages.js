@@ -12,6 +12,7 @@ const PAGE = document.body.dataset.page || "home";
 const ROOT = document.querySelector("#page-root");
 const PUBLIC_PAGES = new Set(["auth"]);
 const LEVEL_ORDER = ["M0", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "M10"];
+const CERTIFICATE_ARCHIVE = "/assets/images/certificates/legacy-mbitir-status-certificate.jpg";
 
 const AVATARS = [
   { id: "emerald", label: "Emerald", url: "/assets/images/avatars/avatar-emerald.svg" },
@@ -54,6 +55,8 @@ const EN_TEXT = new Map([
   ["نسخ رابط الدعوة", "Copy invite link"], ["لا يوجد أعضاء في هذا المستوى.", "No members in this level."], ["تقديم طلب", "Apply"],
   ["دليل الموظف", "Employee guide"], ["عن VidiX", "About VidiX"], ["الشهادات", "Certificates"]
 ]);
+
+const EN_LOOKUP = createTranslationLookup(EN_TEXT);
 
 const state = {
   user: null,
@@ -158,16 +161,42 @@ function currentLanguage() {
 }
 
 function applyTextTranslations(root = document.body) {
-  if (currentLanguage() !== "en") return;
+  const language = currentLanguage();
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const nodes = [];
   while (walker.nextNode()) nodes.push(walker.currentNode);
   nodes.forEach((node) => {
     const original = node.nodeValue;
     const trimmed = original.trim();
-    if (!trimmed || !EN_TEXT.has(trimmed)) return;
-    node.nodeValue = original.replace(trimmed, EN_TEXT.get(trimmed));
+    if (!trimmed) return;
+    const normalized = decodeMojibake(trimmed);
+    if (language === "ar") {
+      if (normalized !== trimmed) node.nodeValue = original.replace(trimmed, normalized);
+      return;
+    }
+    const translated = EN_LOOKUP.get(trimmed) || EN_LOOKUP.get(normalized);
+    if (!translated) return;
+    node.nodeValue = original.replace(trimmed, translated);
   });
+}
+
+function createTranslationLookup(source) {
+  const lookup = new Map();
+  source.forEach((value, key) => {
+    lookup.set(key, value);
+    lookup.set(decodeMojibake(key), value);
+  });
+  return lookup;
+}
+
+function decodeMojibake(value) {
+  if (!/[ÃƒÃ‚Ã˜Ã™Ã¢ØÙ]/.test(value)) return value;
+  try {
+    const bytes = Uint8Array.from([...value].map((character) => character.charCodeAt(0) & 0xff));
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    return value;
+  }
 }
 
 async function renderAuthPage() {
@@ -576,11 +605,26 @@ async function renderAboutPage() {
 }
 
 async function renderCertificatesPage() {
-  ROOT.innerHTML = infoPage("الشهادات", [
-    "صفحة الشهادات تعرض مستندات الشركة والإعلانات الرسمية عند إضافتها من الإدارة.",
-    "تم تجهيز الصفحة كرابط مستقل بدل زر شكلي داخل الرئيسية.",
-    "ارفع ملفات الشهادات لاحقًا من Firebase Hosting أو لوحة الإدارة عند توفر المستندات."
-  ]);
+  ROOT.innerHTML = `
+    <section class="page-title">
+      <small>VidiX Documents</small>
+      <h1>الشهادات</h1>
+    </section>
+    <section class="card card-pad stack">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div>
+          <strong>أرشيف مستندات الشركة</strong>
+          <p class="muted" style="margin:6px 0 0">تم نقل ملف الشهادة من جذر المشروع إلى مسار الأصول الصحيح.</p>
+        </div>
+        <span class="badge gold">Document</span>
+      </div>
+      <a href="${CERTIFICATE_ARCHIVE}" target="_blank" rel="noopener">
+        <img class="certificate-image" src="${CERTIFICATE_ARCHIVE}" alt="Uploaded certificate document" />
+      </a>
+      <p class="muted" style="margin:0">ملاحظة: المستند الحالي مرفوع كأرشيف فقط. استبدله بشهادة رسمية باسم VidiX قبل عرضه كإثبات قانوني عام.</p>
+      <a class="button ghost" href="${CERTIFICATE_ARCHIVE}" target="_blank" rel="noopener">فتح المستند</a>
+    </section>
+  `;
 }
 
 async function startSecureWatch(task) {
@@ -794,7 +838,7 @@ function showLoading() {
 
 function showError(error) {
   console.error(error);
-  if (ROOT && !ROOT.innerHTML.trim()) ROOT.innerHTML = emptyCard(error.message || "Operation failed.");
+  if (ROOT && (!ROOT.innerHTML.trim() || ROOT.querySelector(".skeleton"))) ROOT.innerHTML = emptyCard(error.message || "Operation failed.");
   showToast(error.message || "Operation failed.", "error");
 }
 
@@ -815,7 +859,19 @@ function statBox(label, value, kind = "") {
 }
 
 function quickLink(href, label, icon) {
-  return `<a class="card card-pad" href="${href}" style="min-height:98px;display:grid;place-items:center;text-align:center;gap:8px"><span class="badge">${icon}</span><strong>${escapeHtml(label)}</strong></a>`;
+  return `<a class="card card-pad action-tile" href="${href}"><span class="badge action-icon" aria-hidden="true">${iconSvg(icon)}</span><strong>${escapeHtml(label)}</strong></a>`;
+}
+
+function iconSvg(name) {
+  const icons = {
+    plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+    send: '<svg viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>',
+    users: '<svg viewBox="0 0 24 24"><path d="M16 21a4 4 0 0 0-8 0"/><circle cx="12" cy="7" r="4"/><path d="M22 21a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    book: '<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></svg>',
+    star: '<svg viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 7 .9-5.1 4.9 1.3 6.9L12 17.7 5.7 21l1.3-6.9L1.9 9.2l7-.9Z"/></svg>',
+    building: '<svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h7v18"/><path d="M14 8h3a2 2 0 0 1 2 2v11"/><path d="M8 7h2M8 11h2M8 15h2"/></svg>'
+  };
+  return icons[name] || icons.star;
 }
 
 function payoutRows() {

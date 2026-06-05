@@ -3,6 +3,22 @@
 ```text
 vidix/
 |-- index.html
+|-- auth.html
+|-- tasks.html
+|-- watch.html
+|-- vip.html
+|-- deposit.html
+|-- withdraw.html
+|-- profile.html
+|-- wallet.html
+|-- fund-password.html
+|-- invoice.html
+|-- fund.html
+|-- team.html
+|-- rank.html
+|-- guide.html
+|-- about.html
+|-- certificates.html
 |-- admin.html
 |-- vite.config.js
 |-- package.json
@@ -18,8 +34,10 @@ vidix/
 |-- public/
 |   `-- assets/
 |       |-- images/
+|       |   |-- avatars/
 |       |   |-- banners/
 |       |   |-- brand/
+|       |   |-- certificates/
 |       |   `-- tasks/
 |       `-- videos/
 |-- seed/
@@ -31,18 +49,16 @@ vidix/
 |   |   |-- api/
 |   |   |   `-- backend-client.js
 |   |   |-- admin-console.js
-|   |   |-- app.js
 |   |   |-- firebase-auth.js
 |   |   |-- firebase-config.js
-|   |   |-- mobile-app.js
-|   |   |-- platform-controller.js
-|   |   |-- task-firestore.js
+|   |   |-- pages/
+|   |   |   `-- platform-pages.js
 |   |   |-- wallet-firestore.js
-|   |   |-- data/
 |   |   |-- ui/
+|   |   |   `-- async-ui.js
 |   |   `-- utils/
-|   `-- styles/
-|       `-- theme.css
+|   `-- css/
+|       `-- vidix-pages.css
 |-- tests/
 |   `-- firestore.rules.test.js
 |-- tools/
@@ -55,7 +71,7 @@ vidix/
 
 ## Notes
 
-- `index.html` is the current mobile-first user app shell.
+- Each user route is a standalone HTML entry, with shared rendering in `src/js/pages/platform-pages.js`.
 - `admin.html` is the admin console UI.
 - `src/js/api/backend-client.js` attaches the Firebase Auth ID token and calls the Cloudflare Worker API.
 - `worker/src/index.js` owns secure registration, task rewards, deposits, withdrawals, VIP upgrades, investments, imports, and admin actions.

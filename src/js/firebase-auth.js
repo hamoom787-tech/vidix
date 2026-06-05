@@ -22,9 +22,9 @@ export async function registerNewUser({
 
     await apiRequest("/auth/complete-registration", {
       body: {
-      referralCode,
-      phone,
-      displayName,
+        referralCode,
+        phone,
+        displayName,
         fundPassword: secureFundPassword,
         authProvider: "email"
       }

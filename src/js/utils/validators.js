@@ -11,8 +11,8 @@ export function assertPositiveAmount(amount, minimum = 0) {
 
 export function assertTxId(txId) {
   const clean = String(txId || "").trim();
-  if (clean.length < 12 || clean.length > 140) {
-    throw new Error("Transaction hash must be between 12 and 140 characters.");
+  if (clean.length < 6 || clean.length > 140) {
+    throw new Error("Payment reference must be between 6 and 140 characters.");
   }
   return clean;
 }
