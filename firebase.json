@@ -4,6 +4,22 @@
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       { "source": "/admin", "destination": "/admin.html" },
+      { "source": "/auth", "destination": "/auth.html" },
+      { "source": "/tasks", "destination": "/tasks.html" },
+      { "source": "/watch", "destination": "/watch.html" },
+      { "source": "/vip", "destination": "/vip.html" },
+      { "source": "/deposit", "destination": "/deposit.html" },
+      { "source": "/withdraw", "destination": "/withdraw.html" },
+      { "source": "/profile", "destination": "/profile.html" },
+      { "source": "/wallet", "destination": "/wallet.html" },
+      { "source": "/fund-password", "destination": "/fund-password.html" },
+      { "source": "/invoice", "destination": "/invoice.html" },
+      { "source": "/fund", "destination": "/fund.html" },
+      { "source": "/team", "destination": "/team.html" },
+      { "source": "/rank", "destination": "/rank.html" },
+      { "source": "/guide", "destination": "/guide.html" },
+      { "source": "/about", "destination": "/about.html" },
+      { "source": "/certificates", "destination": "/certificates.html" },
       { "source": "**", "destination": "/index.html" }
     ]
   },
